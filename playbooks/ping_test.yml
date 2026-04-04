@@ -1,0 +1,23 @@
+---
+- name: Router ping test
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: Juniper!1
+
+  tasks:
+    - name: Ping 10.100.100.2 from router
+      juniper.device.ping:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        dest: 10.100.100.2 
+      register: result
+
+    - name: Show result
+      debug:
+        var: result

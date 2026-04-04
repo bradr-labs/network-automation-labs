@@ -1,0 +1,37 @@
+---
+- name: Set hostnames on Junos routers
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: Juniper!1
+
+  tasks:
+    - name: Set system host-name
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        load: set
+        lines:
+          - "set system host-name {{ new_hostname }}"
+        comment: "Set hostname from Ansible lab"
+        commit: true
+      register: config_result
+
+    - name: Verify hostname
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        commands:
+          - "show configuration system host-name | display set"
+      register: verify_result
+
+    - name: Print verify output
+      ansible.builtin.debug:
+        var: verify_result.stdout_lines

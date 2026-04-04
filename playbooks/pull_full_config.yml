@@ -1,0 +1,25 @@
+---
+- name: Pull full Junos configs
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Get full configuration
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        commands:
+          - "show configuration"
+      register: config_output
+
+    - name: Save config as .conf file
+      ansible.builtin.copy:
+        content: "{{ config_output.stdout }}"
+        dest: "~/Documents/D-Data/Programming/vlabs/backups/{{ inventory_hostname }}.conf"

@@ -1,0 +1,21 @@
+---
+- name: Test Junos connectivity
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    user: jcluser
+    passwd: Juniper!1
+    port: "{{ ansible_port }}"
+
+  tasks:
+    - name: Run show version
+      juniper.device.command:
+        commands:
+          - "show version"
+      register: out
+
+    - name: Print output
+      ansible.builtin.debug:
+        var: out.stdout_lines
