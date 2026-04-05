@@ -1,4 +1,3 @@
 ansible_connection: local
-user: jcluser
-passwd: Juniper!1
-port: "{{ ansible_port }}"
+junos_user: jcluser
+junos_passwd: Juniper!1
