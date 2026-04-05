@@ -17,7 +17,7 @@
         port: "{{ ansible_port }}"
         load: set
         lines:
-          - "set system host-name {{ new_hostname }}"
+          - "set system host-name {{ hostname }}"
         comment: "Set hostname from Ansible lab"
         commit: true
       register: config_result
