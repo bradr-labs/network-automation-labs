@@ -1,0 +1,11 @@
+---
+- name: Render base configs
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Render base config from template
+      ansible.builtin.template:
+        src: ../templates/ospf_multi_area_base.j2
+        dest: ../rendered/{{ inventory_hostname }}-base.conf

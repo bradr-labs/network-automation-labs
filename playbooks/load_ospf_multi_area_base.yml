@@ -1,5 +1,5 @@
 ---
-- name: Test Junos connectivity
+- name: Load rendered base configs
   hosts: junos
   gather_facts: false
   connection: local
@@ -9,16 +9,12 @@
     junos_passwd: "Juniper!1"
 
   tasks:
-    - name: Run show version
-      juniper.device.command:
+    - name: Push rendered base config
+      juniper.device.config:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
         passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
-        commands:
-          - "show version"
-      register: out
-
-    - name: Print output
-      ansible.builtin.debug:
-        var: out.stdout_lines
+        load: override
+        src: "../rendered/{{ inventory_hostname }}-base.conf"
+        comment: "Rendered base config"

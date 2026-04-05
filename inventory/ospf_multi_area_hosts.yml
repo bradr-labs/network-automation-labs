@@ -1,0 +1,127 @@
+all:
+  children:
+    junos:
+      hosts:
+
+        r1:
+          hostname: lab-r1
+
+          router_id: 10.100.100.1
+          loopback_ip: 10.100.100.1
+          fxp0_ip: 100.123.1.0/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/0
+              address: 10.100.12.1/24
+            - name: ge-0/0/1
+              address: 10.100.14.1/24
+            - name: ge-0/0/2
+              address: 10.100.13.1/24
+            - name: ge-0/0/3
+              address: 10.100.15.1/24
+
+
+        r2:
+          hostname: lab-r2
+          router_id: 10.100.100.2
+          loopback_ip: 10.100.100.2
+          fxp0_ip: 100.123.1.1/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/0
+              address: 10.100.12.2/24
+            - name: ge-0/0/1
+              address: 10.100.23.1/24
+            - name: ge-0/0/2
+              address: 10.100.24.1/24
+            - name: ge-0/0/3
+              address: 10.100.26.1/24
+
+        r3:
+          hostname: lab-r3
+          router_id: 10.100.100.3
+          loopback_ip: 10.100.100.3
+          fxp0_ip: 100.123.1.2/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/0
+              address: 10.100.34.1/24
+            - name: ge-0/0/1
+              address: 10.100.23.2/24
+            - name: ge-0/0/2
+              address: 10.100.13.2/24
+            - name: ge-0/0/4
+              address: 10.100.35.1/24
+
+
+        r4:
+          hostname: lab-r4
+          router_id: 10.100.100.4
+          loopback_ip: 10.100.100.4
+          fxp0_ip: 100.123.1.3/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/0
+              address: 10.100.34.2/24
+            - name: ge-0/0/1
+              address: 10.100.14.2/24
+            - name: ge-0/0/2
+              address: 10.100.24.2/24
+            - name: ge-0/0/4
+              address: 10.100.46.1/24
+
+
+        r5:
+          hostname: lab-r5
+          router_id: 10.100.100.5
+          loopback_ip: 10.100.100.5
+          fxp0_ip: 100.123.1.4/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/3
+              address: 10.100.15.2/24
+            - name: ge-0/0/4
+              address: 10.100.35.2/24
+
+
+        r6:
+          hostname: lab-r5
+          router_id: 10.100.100.6
+          loopback_ip: 10.100.100.6
+          fxp0_ip: 100.123.1.5/16
+          default_route_next_hop: 100.123.0.1
+
+          root_encrypted_password: '$6$w0uV/Veg$MxUKS00aYKDRZKuI13guEQ3yhv0XjZ5vDD/xBSVatXwzxvgMZCjERUu5kEpMaRzFDhrcyf8NLW8lQiM.KpUCE1'
+          jcladmin_encrypted_password: '$6$COH4QgW/$uFzZAk1fYdnuwVl5WUjhb/4JdtSWIq7y/eCqB3qEFLFK/QBeG1C686NzW0XL0sz8qX4bzyYW0uMIBNXK47Kw7.'
+          jcluser_encrypted_password: '$6$G44rGtvQ$I3jMwJk.0/CbTlhEoZzoDGv9dcFuZYdKvNFHiZwZ6s5Lktf/vMHipZxDwEXxgtid.dmN5K27fMBYwKnSijiQ/'
+
+          underlay_interfaces:
+            - name: ge-0/0/3
+              address: 10.100.26.2/24
+            - name: ge-0/0/4
+              address: 10.100.46.2/24

@@ -1,0 +1,104 @@
+version 21.1R3.11;
+
+system {
+    host-name {{ hostname }};
+    root-authentication {
+        encrypted-password "{{ root_encrypted_password }}";
+    }
+    scripts {
+        language python;
+    }
+    login {
+        user jcladmin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "{{ jcladmin_encrypted_password }}";
+            }
+        }
+        user jcluser {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "{{ jcluser_encrypted_password }}";
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        netconf {
+            ssh;
+        }
+        rest {
+            http {
+                port 3000;
+            }
+            enable-explorer;
+        }
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag all;
+            }
+        }
+    }
+}
+
+chassis {
+    fpc 0 {
+        pic 0 {
+            number-of-ports 8;
+        }
+        lite-mode;
+    }
+}
+
+interfaces {
+{% for iface in underlay_interfaces %}
+    {{ iface.name }} {
+        unit 0 {
+            family inet {
+                address {{ iface.address }};
+            }
+        }
+    }
+{% endfor %}
+    fxp0 {
+        unit 0 {
+            family inet {
+                address {{ fxp0_ip }};
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address {{ loopback_ip }}/32;
+            }
+        }
+    }
+}
+
+routing-options {
+    router-id {{ router_id }};
+    static {
+        route 0.0.0.0/0 next-hop {{ default_route_next_hop }};
+    }
+}
