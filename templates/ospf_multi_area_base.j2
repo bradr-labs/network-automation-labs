@@ -2,27 +2,8 @@ version 21.1R3.11;
 
 system {
     host-name {{ hostname }};
-    root-authentication {
-        encrypted-password "{{ root_encrypted_password }}";
-    }
     scripts {
         language python;
-    }
-    login {
-        user jcladmin {
-            uid 2000;
-            class super-user;
-            authentication {
-                encrypted-password "{{ jcladmin_encrypted_password }}";
-            }
-        }
-        user jcluser {
-            uid 2001;
-            class super-user;
-            authentication {
-                encrypted-password "{{ jcluser_encrypted_password }}";
-            }
-        }
     }
     services {
         ssh {
