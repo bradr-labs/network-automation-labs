@@ -77,7 +77,7 @@ This workflow converts a Juniper OSPF Multi-area starter lab into an ISIS underl
 
 Key Concepts
 - Topology data is defined in:
-  - inventory/ospf_multi_area_hosts.yml
+  - inventory/ospf_multi_area.yml
 - Lab access (IP/port) is defined in:
   - inventory/lab_access.yml (changes per lab respin)
 - Authentication is NOT templated (lab-managed)
@@ -95,19 +95,19 @@ Workflow Steps
 source .venv/bin/activate
 2. Verify connectivity
 ansible-playbook \
--i inventory/ospf_multi_area_hosts.yml \
+-i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/test_connectivity.yml \
 --limit r1
 3. Render final configuration
 ansible-playbook \
--i inventory/ospf_multi_area_hosts.yml \
+-i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/render_ospf_multi_area_with_isis.yml \
 --limit r1
 4. Convert router from OSPF to ISIS
 ansible-playbook \
--i inventory/ospf_multi_area_hosts.yml \
+-i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/ospf_multi_area_to_isis.yml \
 --limit r1
