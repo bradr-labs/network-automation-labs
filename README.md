@@ -66,3 +66,60 @@ ansible-playbook -i inventory/hosts.yml playbooks/set_hostname.yml
 - Jinja2 templates for config generation
 - Data-driven topology definitions
 - Config validation and drift detection
+
+## Authentication
+- Authentication is intentionally excluded from rendered lab templates because reapplying local auth blocks breaks new logins in the JCL environment
+
+## Lab Workflows
+OSPF Multi-area → ISIS Conversion
+
+This workflow converts a Juniper OSPF Multi-area starter lab into an ISIS underlay using templated configuration and Ansible orchestration.
+
+Key Concepts
+- Topology data is defined in:
+  - inventory/ospf_multi_area_hosts.yml
+- Lab access (IP/port) is defined in:
+  - inventory/lab_access.yml (changes per lab respin)
+- Authentication is NOT templated (lab-managed)
+
+Templates
+- templates/ospf_multi_area_base.j2
+- templates/ospf_multi_area_with_isis.j2
+
+Playbooks
+- playbooks/render_ospf_multi_area_with_isis.yml
+- playbooks/ospf_multi_area_to_isis.yml
+
+Workflow Steps
+1. Activate environment
+source .venv/bin/activate
+2. Verify connectivity
+ansible-playbook \
+-i inventory/ospf_multi_area_hosts.yml \
+-i inventory/lab_access.yml \
+playbooks/test_connectivity.yml \
+--limit r1
+3. Render final configuration
+ansible-playbook \
+-i inventory/ospf_multi_area_hosts.yml \
+-i inventory/lab_access.yml \
+playbooks/render_ospf_multi_area_with_isis.yml \
+--limit r1
+4. Convert router from OSPF to ISIS
+ansible-playbook \
+-i inventory/ospf_multi_area_hosts.yml \
+-i inventory/lab_access.yml \
+playbooks/ospf_multi_area_to_isis.yml \
+--limit r1
+5. Repeat for additional routers
+--limit r2
+--limit r3
+
+Safety Notes
+- load override is avoided due to access issues in the lab environment
+
+Workflow uses:
+- explicit removal of OSPF
+- merge of final config
+- immediate verification
+- Authentication config is intentionally excluded from templates
