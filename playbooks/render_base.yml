@@ -8,4 +8,4 @@
     - name: Render base config from template
       ansible.builtin.template:
         src: ../templates/ospf_multi_area_base.j2
-        dest: ../rendered/{{ inventory_hostname }}-base.conf
+        dest: ../rendered/ospf_multi_area/base/{{ inventory_hostname }}-base.conf

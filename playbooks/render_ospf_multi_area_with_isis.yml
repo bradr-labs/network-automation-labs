@@ -8,4 +8,4 @@
     - name: Render final config
       ansible.builtin.template:
         src: ../templates/ospf_multi_area_with_isis.j2
-        dest: ../rendered/{{ inventory_hostname }}-final.conf
+        dest: ../rendered/ospf_multi_area/transition/{{ inventory_hostname }}-final.conf

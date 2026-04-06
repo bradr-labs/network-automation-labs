@@ -12,8 +12,22 @@
     - name: Render final config
       ansible.builtin.template:
         src: ../templates/ospf_multi_area_with_isis.j2
-        dest: ../rendered/{{ inventory_hostname }}-final.conf
+        dest: ../rendered/ospf_multi_area/transition/{{ inventory_hostname }}-final.conf
 
+    - name: Check whether OSPF is configured
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        commands:
+          - "show configuration protocols ospf"
+      register: ospf_check
+
+    - name: Show OSPF check result
+      ansible.builtin.debug:
+        var: ospf_check
+        
     - name: Remove OSPF
       juniper.device.config:
         host: "{{ ansible_host }}"
@@ -25,6 +39,10 @@
           - "delete protocols ospf"
         comment: "Remove OSPF before ISIS"
         commit: true
+      when:
+        - ospf_check.stdout is defined
+        - ospf_check.stdout | length > 0
+        - ospf_check.stdout[0] | trim != ""
 
     - name: Merge final ISIS config
       juniper.device.config:
@@ -33,7 +51,7 @@
         passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
         load: merge
-        src: ../rendered/{{ inventory_hostname }}-final.conf
+        src: ../rendered/ospf_multi_area/transition/{{ inventory_hostname }}-final.conf
         comment: "Apply base plus ISIS"
 
     - name: Verify router reachable

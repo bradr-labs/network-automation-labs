@@ -16,5 +16,5 @@
         passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
         load: merge
-        src: "../rendered/{{ inventory_hostname }}-base.conf"
+        src: "../rendered/ospf_multi_area/base/{{ inventory_hostname }}-base.conf"
         comment: "Rendered base config"

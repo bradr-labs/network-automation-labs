@@ -58,6 +58,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/set_hostname.yml
 - Uses per-device ports for lab access
 - Credentials are currently stored in playbooks (lab only)
 - `.venv/`, `backups/`, and generated files are excluded from Git
+- This repo is intended to support multiple Juniper starter topologies, with OSPF Multi-area implemented first
 
 ---
 
@@ -71,7 +72,8 @@ ansible-playbook -i inventory/hosts.yml playbooks/set_hostname.yml
 - Authentication is intentionally excluded from rendered lab templates because reapplying local auth blocks breaks new logins in the JCL environment
 
 ## Lab Workflows
-OSPF Multi-area → ISIS Conversion
+
+## Lab #1 OSPF Multi-area → ISIS Conversion
 
 This workflow converts a Juniper OSPF Multi-area starter lab into an ISIS underlay using templated configuration and Ansible orchestration.
 
@@ -123,3 +125,31 @@ Workflow uses:
 - merge of final config
 - immediate verification
 - Authentication config is intentionally excluded from templates
+
+### Rendering Model Update
+
+Rendered configurations are now organized by stage:
+
+- `rendered/ospf_multi_area/base/`
+- `rendered/ospf_multi_area/transition/`
+
+This prevents configuration drift and ensures clear separation between:
+
+- base topology configuration
+- transition (OSPF → ISIS) configuration
+
+### Idempotent Workflow
+
+The OSPF-to-ISIS workflow is designed to be rerunnable:
+
+- OSPF removal is conditional (only executed if present)
+- Final configuration is merged safely
+- Playbook can be executed multiple times without failure
+
+## Lab #2 – ISIS Multi-Area Underlay + BGP/VPN Service Overlay
+
+Rendering rule for Lab #2:
+Underlay/core state is generated in bracket style.
+Overlay/service state is generated in set style.
+Top-level output folder stays rendered/ across all labs.
+Variation happens under that folder, by lab and by phase.
