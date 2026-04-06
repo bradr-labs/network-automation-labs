@@ -1,0 +1,61 @@
+---
+- name: Convert OSPF multi-area lab to ISIS
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Render final config
+      ansible.builtin.template:
+        src: ../templates/ospf_multi_area_with_isis.j2
+        dest: ../rendered/{{ inventory_hostname }}-final.conf
+
+    - name: Remove OSPF
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        load: set
+        lines:
+          - "delete protocols ospf"
+        comment: "Remove OSPF before ISIS"
+        commit: true
+
+    - name: Merge final ISIS config
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        load: merge
+        src: ../rendered/{{ inventory_hostname }}-final.conf
+        comment: "Apply base plus ISIS"
+
+    - name: Verify router reachable
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        commands:
+          - "show version"
+      register: version_out
+
+    - name: Verify ISIS config exists
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        commands:
+          - "show configuration protocols isis"
+      register: isis_out
+
+    - name: Print ISIS output
+      ansible.builtin.debug:
+        var: isis_out.stdout_lines

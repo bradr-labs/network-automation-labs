@@ -58,6 +58,7 @@ interfaces {
             family inet {
                 address {{ iface.address }};
             }
+            family iso;
         }
     }
 {% endfor %}
@@ -73,12 +74,27 @@ interfaces {
             family inet {
                 address {{ loopback_ip }}/32;
             }
+            family iso {
+                address {{ iso_address }};
+            }
         }
     }
 }
 
 routing-options {
+    router-id {{ router_id }};
     static {
         route 0.0.0.0/0 next-hop {{ default_route_next_hop }};
+    }
+}
+
+protocols {
+    isis {
+{% for iface in underlay_interfaces %}
+        interface {{ iface.name }}.0 {
+            level 1 disable;
+        }
+{% endfor %}
+        interface lo0.0;
     }
 }

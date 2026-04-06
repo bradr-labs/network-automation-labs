@@ -1,0 +1,11 @@
+---
+- name: Render final OSPF multi-area to ISIS configs
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Render final config
+      ansible.builtin.template:
+        src: ../templates/ospf_multi_area_with_isis.j2
+        dest: ../rendered/{{ inventory_hostname }}-final.conf

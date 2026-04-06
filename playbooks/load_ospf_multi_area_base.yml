@@ -15,6 +15,6 @@
         user: "{{ junos_user }}"
         passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
-        load: override
+        load: merge
         src: "../rendered/{{ inventory_hostname }}-base.conf"
         comment: "Rendered base config"
