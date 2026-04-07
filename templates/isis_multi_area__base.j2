@@ -1,0 +1,91 @@
+system {
+    host-name {{ lab_name | default(inventory_hostname) }};
+}
+
+interfaces {
+{% for iface in device_interfaces %}
+    {{ iface['name'] }} {
+{% if iface.description is defined %}
+        description "{{ iface.description }}";
+{% endif %}
+        unit {{ iface['unit'] }} {
+{% if iface.disabled | default(false) %}
+            disable;
+{% endif %}
+{% if iface.family_inet is defined %}
+            family inet {
+                address {{ iface.family_inet.address }};
+            }
+{% endif %}
+{% if iface.family_iso_address is defined %}
+            family iso {
+                address {{ iface.family_iso_address }};
+            }
+{% elif iface.family_iso | default(false) %}
+            family iso;
+{% endif %}
+{% if iface.family_mpls | default(false) %}
+            family mpls;
+{% endif %}
+        }
+    }
+{% endfor %}
+}
+
+{% if routing_options is defined and routing_options.static_routes is defined and routing_options.static_routes %}
+routing-options {
+    static {
+{% for route in routing_options.static_routes %}
+        route {{ route.prefix }} next-hop {{ route.next_hop }};
+{% endfor %}
+    }
+}
+{% endif %}
+
+protocols {
+{% if underlay.isis.enabled %}
+    isis {
+{% for iface_name in underlay.isis.interfaces %}
+{% if underlay.isis.level == "2" and iface_name != "lo0.0" %}
+        interface {{ iface_name }} {
+            level 1 disable;
+        }
+{% else %}
+        interface {{ iface_name }};
+{% endif %}
+{% endfor %}
+    }
+{% endif %}
+
+{% if underlay.mpls.enabled %}
+    mpls {
+{% for iface_name in underlay.mpls.interfaces %}
+        interface {{ iface_name }};
+{% endfor %}
+
+{% if underlay.mpls.lsp is defined %}
+{% for lsp in underlay.mpls.lsp %}
+        label-switched-path {{ lsp.name }} {
+            to {{ lsp.to }};
+        }
+{% endfor %}
+{% endif %}
+    }
+{% endif %}
+
+{% if underlay.mpls.ldp.enabled %}
+    ldp {
+{% for iface_name in underlay.mpls.ldp.interfaces %}
+        interface {{ iface_name }};
+{% endfor %}
+    }
+{% endif %}
+
+{% if underlay.mpls.rsvp.enabled %}
+    rsvp {
+{% for iface_name in underlay.mpls.rsvp.interfaces %}
+        interface {{ iface_name }};
+{% endfor %}
+    }
+{% endif %}
+}

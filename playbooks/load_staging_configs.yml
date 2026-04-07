@@ -1,0 +1,20 @@
+---
+- name: Load staging configs to Junos routers
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push full config from file
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ cfg_file }}"
+        load: override
+        comment: "Load staging config"

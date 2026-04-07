@@ -1,0 +1,75 @@
+lab_name: lab-r3
+device_role: pe
+jcl_node: vmx3
+
+loopback:
+  ipv4: 10.100.100.3/32
+
+underlay:
+  isis:
+    enabled: true
+    net: "49.0002.1010.0100.0003.00"
+    level: "2"
+    interfaces:
+      - ge-0/0/0.0
+      - ge-0/0/1.0
+      - lo0.0
+
+  mpls:
+    enabled: true
+    interfaces:
+      - ge-0/0/0.0
+
+    lsp:
+      - name: MX3-TO-MX5
+        to: 10.100.100.5
+        
+    ldp:
+      enabled: false
+      interfaces: []
+
+    rsvp:
+      enabled: true
+      interfaces:
+        - ge-0/0/0.0
+
+device_interfaces:
+  - name: ge-0/0/0
+    unit: 0
+    description: "to lab-r1"
+    family_inet:
+      address: 10.100.13.2/24
+    family_iso: true
+    family_mpls: true
+
+  - name: ge-0/0/1
+    unit: 0
+    description: "to lab-r2"
+    disabled: true
+    family_inet:
+      address: 10.100.23.2/24
+    family_iso: true
+
+  - name: ge-0/0/2
+    unit: 0
+    description: "to customer"
+    family_inet:
+      address: 10.100.34.1/24
+
+  - name: fxp0
+    unit: 0
+    description: "management"
+    family_inet:
+      address: 100.123.1.2/16
+
+  - name: lo0
+    unit: 0
+    description: "loopback"
+    family_inet:
+      address: 10.100.100.3/32
+    family_iso_address: "49.0002.1010.0100.0003.00"
+
+routing_options:
+  static_routes:
+    - prefix: "0.0.0.0/0"
+      next_hop: "100.123.0.1"

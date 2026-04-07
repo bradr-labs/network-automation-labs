@@ -1,1 +1,10 @@
-# Placeholder inventory for Juniper ISIS Multi-area starter topology
+all:
+  children:
+    isis_multi_area:
+      hosts:
+        isis_multi_area__lab-r1:
+        isis_multi_area__lab-r2:
+        isis_multi_area__lab-r3:
+        isis_multi_area__lab-r4:
+        isis_multi_area__lab-r5:
+        isis_multi_area__lab-r6:

@@ -6,3 +6,5 @@ rendered/
 *.log
 *.docx
 ~$*
+.DS_Store
+*.bak
