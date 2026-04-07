@@ -71,6 +71,48 @@ ansible-playbook -i inventory/hosts.yml playbooks/set_hostname.yml
 ## Authentication
 - Authentication is intentionally excluded from rendered lab templates because reapplying local auth blocks breaks new logins in the JCL environment
 
+## Quick Config Load (Staging / Lab Bootstrap)
+
+This method is used to rapidly load full configurations onto lab routers.
+It is intended for quick lab setup or staging scenarios.
+
+### Overview
+Uses per-router config files (cfg_file)
+Applies configs using load: override
+Replaces the entire device configuration
+Not part of the structured workflow (no validation or safety checks)
+Inventory Requirements
+
+Each host must define:
+
+cfg_file: "../../vlabs/staging/vMX1-juniper.conf"
+
+Lab access (IP/port) is provided via:
+
+inventory/lab_access.yml
+Playbook
+
+playbooks/load_staging_configs.yml
+
+### Run Command
+ansible-playbook \
+-i inventory/staging_load.yml \
+-i inventory/lab_access.yml \
+playbooks/load_staging_configs.yml
+Optional: Test Single Router
+--limit r1
+
+### Important Notes
+Uses load: override → replaces full configuration
+May overwrite authentication or access settings
+Ensure configs are correct before running
+Relative paths must be valid from the repository root
+Designed for lab use only (not production safe)
+Use Case
+Rapid lab rebuilds
+Loading vendor-provided configs
+Resetting topology to known state
+
 ## Lab Workflows
 
 ## Lab #1 OSPF Multi-area → ISIS Conversion
