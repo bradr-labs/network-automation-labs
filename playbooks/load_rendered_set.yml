@@ -1,0 +1,20 @@
+---
+- name: Load rendered set configs to Junos routers
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push rendered set config
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ cfg_file }}"
+        load: set
+        comment: "Load rendered config (set)"

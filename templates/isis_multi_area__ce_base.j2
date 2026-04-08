@@ -1,0 +1,65 @@
+system {
+    host-name {{ lab_name | default(inventory_hostname) }};
+}
+
+interfaces {
+{% for iface in device_interfaces %}
+    {{ iface['name'] }} {
+{% if iface['description'] is defined %}
+        description "{{ iface['description'] }}";
+{% endif %}
+        unit {{ iface['unit'] }} {
+{% if iface['family_inet'] is defined %}
+            family inet {
+{% if iface['family_inet']['addresses'] is defined %}
+{% for addr in iface['family_inet']['addresses'] %}
+                address {{ addr }};
+{% endfor %}
+{% else %}
+                address {{ iface['family_inet']['address'] }};
+{% endif %}
+            }
+{% endif %}
+        }
+    }
+{% endfor %}
+}
+
+{% if policy_options is defined and policy_options.export_direct_policy is defined and policy_options.export_direct_policy.enabled %}
+policy-options {
+    policy-statement {{ policy_options.export_direct_policy.name }} {
+        term 1 {
+            from protocol direct;
+            then accept;
+        }
+    }
+}
+{% endif %}
+
+routing-options {
+{% if routing_options is defined and routing_options.autonomous_system is defined %}
+    autonomous-system {{ routing_options.autonomous_system }};
+{% endif %}
+{% if routing_options is defined and routing_options.static_routes is defined and routing_options.static_routes %}
+    static {
+{% for route in routing_options.static_routes %}
+        route {{ route.prefix }} next-hop {{ route.next_hop }};
+{% endfor %}
+    }
+{% endif %}
+}
+
+{% if ce_routing is defined and ce_routing.bgp is defined and ce_routing.bgp.enabled %}
+protocols {
+    bgp {
+        group {{ ce_routing.bgp.group_name }} {
+            type external;
+{% if ce_routing.bgp.export_policy is defined %}
+            export {{ ce_routing.bgp.export_policy }};
+{% endif %}
+            peer-as {{ ce_routing.bgp.peer_as }};
+            neighbor {{ ce_routing.bgp.neighbor }};
+        }
+    }
+}
+{% endif %}

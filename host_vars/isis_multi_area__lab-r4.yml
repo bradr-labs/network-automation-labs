@@ -1,0 +1,45 @@
+lab_name: lab-r4
+device_role: ce
+jcl_node: vmx4
+
+device_interfaces:
+  - name: ge-0/0/2
+    unit: 0
+    description: "to lab-r3"
+    family_inet:
+      addresses:
+        - 10.100.34.2/24
+
+  - name: fxp0
+    unit: 0
+    description: "management"
+    family_inet:
+      addresses:
+        - 100.123.1.3/16
+
+  - name: lo0
+    unit: 0
+    description: "customer loopback"
+    family_inet:
+      addresses:
+        - 10.100.100.4/32
+        - 192.168.4.4/24
+
+routing_options:
+  autonomous_system: 65004
+  static_routes:
+    - prefix: "0.0.0.0/0"
+      next_hop: "100.123.0.1"
+
+policy_options:
+  export_direct_policy:
+    enabled: true
+    name: send-direct
+
+ce_routing:
+  bgp:
+    enabled: true
+    group_name: EBGP
+    peer_as: 65000
+    neighbor: 10.100.34.1
+    export_policy: send-direct

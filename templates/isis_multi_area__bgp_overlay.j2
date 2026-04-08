@@ -1,4 +1,5 @@
 {% if bgp is defined and bgp.enabled %}
+set routing-options autonomous-system {{ bgp.local_as }}
 set protocols bgp group IBGP type internal
 set protocols bgp group IBGP local-address {{ bgp.local_address }}
 set protocols bgp group IBGP local-as {{ bgp.local_as }}

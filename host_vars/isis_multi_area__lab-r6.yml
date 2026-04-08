@@ -1,0 +1,44 @@
+lab_name: lab-r6
+device_role: ce
+jcl_node: vmx6
+
+device_interfaces:
+  - name: ge-0/0/2
+    unit: 0
+    description: "to lab-r5"
+    family_inet:
+      addresses:
+        - 10.100.56.2/24
+
+  - name: fxp0
+    unit: 0
+    description: "management"
+    family_inet:
+      addresses:
+        - 100.123.1.5/16
+
+  - name: lo0
+    unit: 0
+    description: "customer loopback"
+    family_inet:
+      addresses:
+        - 192.168.6.6/24
+
+routing_options:
+  autonomous_system: 65006
+  static_routes:
+    - prefix: "0.0.0.0/0"
+      next_hop: "100.123.0.1"
+
+policy_options:
+  export_direct_policy:
+    enabled: true
+    name: send-direct
+
+ce_routing:
+  bgp:
+    enabled: true
+    group_name: EBGP
+    peer_as: 65000
+    neighbor: 10.100.56.1
+    export_policy: send-direct
