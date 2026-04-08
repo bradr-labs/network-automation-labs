@@ -1,0 +1,24 @@
+---
+- name: Render ISIS multi-area BGP overlay configs
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    output_dir: "{{ playbook_dir }}/../rendered/isis_multi_area/bgp"
+
+  tasks:
+    - name: Load lab host vars explicitly
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
+
+    - name: Ensure output directory exists
+      ansible.builtin.file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render BGP overlay config
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/isis_multi_area__bgp_overlay.j2"
+        dest: "{{ output_dir }}/{{ lab_name | default(inventory_hostname) }}.set"

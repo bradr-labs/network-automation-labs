@@ -46,7 +46,9 @@ protocols {
 {% if underlay.isis.enabled %}
     isis {
 {% for iface_name in underlay.isis.interfaces %}
-{% if underlay.isis.level == "2" and iface_name != "lo0.0" %}
+{% if underlay.isis.level_1_disable_global | default(false) %}
+        interface {{ iface_name }};
+{% elif underlay.isis.level == "2" and iface_name != "lo0.0" %}
         interface {{ iface_name }} {
             level 1 disable;
         }
@@ -54,16 +56,23 @@ protocols {
         interface {{ iface_name }};
 {% endif %}
 {% endfor %}
+{% if underlay.isis.level_1_disable_global | default(false) %}
+        level 1 disable;
+{% endif %}
     }
 {% endif %}
 
 {% if underlay.mpls.enabled %}
     mpls {
+{% if underlay.mpls.interface_mode | default('listed') == 'all' %}
+        interface all;
+{% else %}
 {% for iface_name in underlay.mpls.interfaces %}
         interface {{ iface_name }};
 {% endfor %}
+{% endif %}
 
-{% if underlay.mpls.lsp is defined %}
+{% if underlay.mpls.lsp is defined and underlay.mpls.lsp %}
 {% for lsp in underlay.mpls.lsp %}
         label-switched-path {{ lsp.name }} {
             to {{ lsp.to }};

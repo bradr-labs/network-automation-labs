@@ -1,0 +1,87 @@
+lab_name: lab-r2
+device_role: rr
+jcl_node: vmx2
+
+loopback:
+  ipv4: 10.100.100.2/32
+
+underlay:
+  isis:
+    enabled: true
+    net: "49.0001.1010.0100.0002.00"
+    level: "2"
+    level_1_disable_global: true
+    interfaces:
+      - ge-0/0/0.0
+      - ge-0/0/1.0
+      - ge-0/0/2.0
+      - lo0.0
+
+  mpls:
+    enabled: true
+    interface_mode: all
+    interfaces: []
+    lsp: []
+    ldp:
+      enabled: false
+      interfaces: []
+    rsvp:
+      enabled: false
+      interfaces: []
+
+device_interfaces:
+  - name: ge-0/0/0
+    unit: 0
+    description: "to lab-r6"
+    family_inet:
+      address: 10.100.26.1/24
+    family_iso: true
+
+  - name: ge-0/0/1
+    unit: 0
+    description: "to lab-r3"
+    family_inet:
+      address: 10.100.23.1/24
+    family_iso: true
+
+  - name: ge-0/0/2
+    unit: 0
+    description: "to lab-r1"
+    family_inet:
+      address: 10.100.12.2/24
+    family_iso: true
+    family_mpls: true
+
+  - name: fxp0
+    unit: 0
+    description: "management"
+    family_inet:
+      address: 100.123.1.1/16
+
+  - name: lo0
+    unit: 0
+    description: "loopback"
+    family_inet:
+      address: 10.100.100.2/32
+    family_iso_address: "49.0001.1010.0100.0002.00"
+
+routing_options:
+  static_routes:
+    - prefix: "0.0.0.0/0"
+      next_hop: "100.123.0.1"
+
+bgp:
+  enabled: true
+  role: rr
+  local_as: 65000
+  local_address: 10.100.100.2
+  cluster_id: 10.100.100.2
+  family_inet_vpn: true
+  neighbors:
+    - 10.100.100.3
+    - 10.100.100.5
+  l3vpn_resolution:
+    enabled: true
+    source_rib: "bgp.l3vpn.0"
+    resolution_ribs:
+      - "inet.0"

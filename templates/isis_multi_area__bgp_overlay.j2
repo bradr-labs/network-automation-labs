@@ -1,0 +1,19 @@
+{% if bgp is defined and bgp.enabled %}
+set protocols bgp group IBGP type internal
+set protocols bgp group IBGP local-address {{ bgp.local_address }}
+set protocols bgp group IBGP local-as {{ bgp.local_as }}
+{% if bgp.family_inet_vpn | default(false) %}
+set protocols bgp group IBGP family inet-vpn unicast
+{% endif %}
+{% if bgp.role | default('') == 'rr' and bgp.cluster_id is defined %}
+set protocols bgp group IBGP cluster {{ bgp.cluster_id }}
+{% endif %}
+{% for neighbor in bgp.neighbors | default([]) %}
+set protocols bgp group IBGP neighbor {{ neighbor }}
+{% endfor %}
+{% if bgp.l3vpn_resolution is defined and bgp.l3vpn_resolution.enabled | default(false) %}
+{% for rib in bgp.l3vpn_resolution.resolution_ribs | default([]) %}
+set routing-options resolution rib {{ bgp.l3vpn_resolution.source_rib }} resolution-ribs {{ rib }}
+{% endfor %}
+{% endif %}
+{% endif %}

@@ -10,6 +10,7 @@ underlay:
     enabled: true
     net: "49.0002.1010.0100.0003.00"
     level: "2"
+    level_1_disable_global: false
     interfaces:
       - ge-0/0/0.0
       - ge-0/0/1.0
@@ -17,13 +18,14 @@ underlay:
 
   mpls:
     enabled: true
+    interface_mode: listed
     interfaces:
       - ge-0/0/0.0
 
     lsp:
-      - name: MX3-TO-MX5
+      - name: R3-TO-R5
         to: 10.100.100.5
-        
+
     ldp:
       enabled: false
       interfaces: []
@@ -73,3 +75,16 @@ routing_options:
   static_routes:
     - prefix: "0.0.0.0/0"
       next_hop: "100.123.0.1"
+
+bgp:
+  enabled: true
+  role: client
+  local_as: 65000
+  local_address: 10.100.100.3
+  family_inet_vpn: true
+  neighbors:
+    - 10.100.100.2
+  l3vpn_resolution:
+    enabled: false
+    source_rib: ""
+    resolution_ribs: []
