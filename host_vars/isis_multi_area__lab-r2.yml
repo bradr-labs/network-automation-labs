@@ -85,3 +85,7 @@ bgp:
     source_rib: "bgp.l3vpn.0"
     resolution_ribs:
       - "inet.0"
+
+vpn_services:
+  enabled: false
+  vrfs: []

@@ -88,3 +88,17 @@ bgp:
     enabled: false
     source_rib: ""
     resolution_ribs: []
+
+vpn_services:
+  enabled: true
+  vrfs:
+    - name: cust-a
+      interface: ge-0/0/2.0
+      route_distinguisher: "10.100.100.3:1"
+      vrf_target: "target:65000:1"
+      vrf_table_label: false
+      ce_bgp:
+        enabled: true
+        group_name: EBGP
+        peer_as: 65004
+        neighbor: 10.100.34.2

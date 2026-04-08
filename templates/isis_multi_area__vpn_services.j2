@@ -1,0 +1,16 @@
+{% if vpn_services is defined and vpn_services.enabled %}
+{% for vrf in vpn_services.vrfs | default([]) %}
+set routing-instances {{ vrf.name }} instance-type vrf
+set routing-instances {{ vrf.name }} interface {{ vrf.interface }}
+set routing-instances {{ vrf.name }} route-distinguisher {{ vrf.route_distinguisher }}
+set routing-instances {{ vrf.name }} vrf-target {{ vrf.vrf_target }}
+{% if vrf.vrf_table_label | default(false) %}
+set routing-instances {{ vrf.name }} vrf-table-label
+{% endif %}
+{% if vrf.ce_bgp is defined and vrf.ce_bgp.enabled %}
+set routing-instances {{ vrf.name }} protocols bgp group {{ vrf.ce_bgp.group_name }} type external
+set routing-instances {{ vrf.name }} protocols bgp group {{ vrf.ce_bgp.group_name }} peer-as {{ vrf.ce_bgp.peer_as }}
+set routing-instances {{ vrf.name }} protocols bgp group {{ vrf.ce_bgp.group_name }} neighbor {{ vrf.ce_bgp.neighbor }}
+{% endif %}
+{% endfor %}
+{% endif %}
