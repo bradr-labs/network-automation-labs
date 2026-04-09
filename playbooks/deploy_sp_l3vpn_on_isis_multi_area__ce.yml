@@ -1,0 +1,20 @@
+---
+- name: Deploy CE configs for SP L3VPN lab
+  hosts: r4:r6
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push CE config with merge
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ playbook_dir }}/../rendered/isis_multi_area/ce/lab-{{ inventory_hostname }}.conf"
+        load: merge
+        comment: "Deploy SP L3VPN CE config"

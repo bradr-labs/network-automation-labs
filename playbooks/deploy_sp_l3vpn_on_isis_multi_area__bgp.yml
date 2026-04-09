@@ -1,0 +1,20 @@
+---
+- name: Deploy BGP overlay configs for SP L3VPN lab
+  hosts: r2:r3:r5
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push BGP overlay config with set
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ playbook_dir }}/../rendered/isis_multi_area/bgp/lab-{{ inventory_hostname }}.set"
+        load: set
+        comment: "Deploy SP L3VPN BGP overlay"

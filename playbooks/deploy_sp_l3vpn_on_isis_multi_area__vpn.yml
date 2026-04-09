@@ -1,0 +1,20 @@
+---
+- name: Deploy VPN services configs for SP L3VPN lab
+  hosts: r3:r5
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push VPN services config with set
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ playbook_dir }}/../rendered/isis_multi_area/vpn/lab-{{ inventory_hostname }}.set"
+        load: set
+        comment: "Deploy SP L3VPN VPN services"

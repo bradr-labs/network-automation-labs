@@ -1,8 +1,8 @@
-# ISIS Multi-Area Lab – Deployment Runbook
+# ISIS Multi-Area Lab – Building Deployment Runbook
 
 ## Overview
 
-This runbook describes how to safely deploy rendered configurations to the Juniper vLabs environment.
+This runbook describes how to safely deploy rendered configurations to the Juniper vLabs environment step by step.
 
 ⚠️ IMPORTANT:
 
@@ -190,5 +190,139 @@ If something breaks:
 * BGP RR: `lab-r2`
 * P routers: `lab-r1`
 * PE routers: `lab-r3`, `lab-r5`
+
+
+# SP L3VPN Deployment (ISIS Multi-Area Topology)
+
+## Overview
+
+This deployment builds a full **Service Provider L3VPN network** on top of the Juniper JCL `isis_multi_area` topology.
+
+### Components deployed
+
+* ISIS underlay (transport)
+* MPLS / RSVP forwarding
+* iBGP Route Reflector (r2)
+* Provider Edge routers (r3, r5)
+* Customer Edge routers (r4, r6)
+* VRF-based L3VPN service (`cust-a`)
+
+---
+
+## Deployment Model
+
+Deployment is performed in **stages**, but executed via a **single orchestrated playbook**.
+
+### Stages
+
+1. **CE layer**
+
+   * r4, r6
+   * eBGP to PE
+   * customer prefixes
+
+2. **Base layer**
+
+   * r1, r2, r3, r5
+   * interfaces, ISIS, MPLS, RSVP
+
+3. **BGP overlay**
+
+   * r2 (RR), r3, r5
+   * iBGP + route-reflection
+   * global autonomous-system
+
+4. **VPN services**
+
+   * r3, r5
+   * VRF (`cust-a`)
+   * PE-CE eBGP
+
+---
+
+## Playbooks
+
+| Purpose         | Playbook                                           |
+| --------------- | -------------------------------------------------- |
+| Full deployment | `playbooks/deploy_sp_l3vpn_on_isis_multi_area.yml` |
+| CE stage        | `deploy_sp_l3vpn_on_isis_multi_area__ce.yml`       |
+| Base stage      | `deploy_sp_l3vpn_on_isis_multi_area__base.yml`     |
+| BGP overlay     | `deploy_sp_l3vpn_on_isis_multi_area__bgp.yml`      |
+| VPN services    | `deploy_sp_l3vpn_on_isis_multi_area__vpn.yml`      |
+
+---
+
+## Deployment Command
+
+Run the full deployment with:
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area.yml
+```
+
+---
+
+## Important Notes
+
+* Uses **merge** for `.conf` files (safe)
+* Uses **set** for `.set` overlays
+* Does **NOT** use `override` (prevents lockout)
+* Deployment order is enforced by orchestrator
+
+---
+
+## Verification
+
+### End-to-end test
+
+From CE r4:
+
+```bash
+ping 192.168.6.6
+```
+
+Expected result:
+
+* Successful replies from r6 customer network
+
+---
+
+### Key checks
+
+#### On r3 / r5
+
+```bash
+show route table cust-a.inet.0
+```
+
+#### On r2
+
+```bash
+show bgp summary
+```
+
+#### On r4 / r6
+
+```bash
+show bgp summary
+```
+
+---
+
+## Golden Rules
+
+1. One command deploy — but staged internally
+2. Never use override in vLabs
+3. If something breaks → stop and verify
+4. Always validate CE → CE reachability
+
+---
+
+## Last Verified Working
+
+2026-04-09
+End-to-end connectivity confirmed: `lab-r4 → 192.168.6.6`
+
+---
 
 ---

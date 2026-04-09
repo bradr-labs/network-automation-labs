@@ -1,0 +1,20 @@
+---
+- name: Deploy base configs for SP L3VPN lab
+  hosts: r1:r2:r3:r5
+  gather_facts: false
+  connection: local
+
+  vars:
+    junos_user: jcluser
+    junos_passwd: "Juniper!1"
+
+  tasks:
+    - name: Push base config with merge
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ junos_passwd }}"
+        port: "{{ ansible_port }}"
+        src: "{{ playbook_dir }}/../rendered/isis_multi_area/base/lab-{{ inventory_hostname }}.conf"
+        load: merge
+        comment: "Deploy SP L3VPN base config"
