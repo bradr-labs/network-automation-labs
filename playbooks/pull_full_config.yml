@@ -5,21 +5,33 @@
   connection: local
 
   vars:
-    junos_user: jcluser
-    junos_passwd: "Juniper!1"
+    junos_user: "jcluser"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
 
   tasks:
     - name: Get full configuration
+      no_log: true
       juniper.device.command:
         host: "{{ ansible_host }}"
-        user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
         commands:
           - "show configuration"
       register: config_output
 
+    - name: Ensure local backup directory exists
+      ansible.builtin.file:
+        path: "backups"
+        state: directory
+        mode: "0755"
+
     - name: Save config as .conf file
       ansible.builtin.copy:
         content: "{{ config_output.stdout }}"
-        dest: "../vlabs/backups/{{ inventory_hostname }}.conf"
+        dest: "backups/{{ inventory_hostname }}.conf"
