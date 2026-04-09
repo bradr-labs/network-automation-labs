@@ -22,4 +22,4 @@
     - name: Save config as .conf file
       ansible.builtin.copy:
         content: "{{ config_output.stdout }}"
-        dest: "~/Documents/D-Data/Programming/vlabs/backups/{{ inventory_hostname }}.conf"
+        dest: "../vlabs/backups/{{ inventory_hostname }}.conf"

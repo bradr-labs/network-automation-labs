@@ -1,197 +1,169 @@
-# Junos Automation Lab (Ansible)
+# SP L3VPN Automation Lab (Juniper vLabs)
 
-## Overview
-This project automates configuration and validation of Juniper vMX routers using Ansible.
+A hands-on network automation project built on Juniper vLabs.
 
-The lab supports full configuration deployment, configuration backup, and basic validation workflows.
+This repo walks through a progression from basic Ansible tasks to a full service provider L3VPN deployment using structured data, templating, and staged rollout.
 
----
-
-## Features
-
-- Push full configurations to multiple routers
-- Pull running configurations from devices
-- Automate hostname changes
-- Support multi-device orchestration using inventory
-- Uses NETCONF (no CLI scraping)
+The goal is simple:
+build something that looks closer to real operations than “run this playbook and hope”.
 
 ---
 
-## Project Structure
-ansible-lab/
-├── inventory/ # device definitions and variables
-├── group_vars/ # shared variables
-├── playbooks/ # automation tasks
-├── backups/ # pulled configs (ignored by git)
-├── rendered/ # generated configs (ignored by git)
-└── .venv/ # python environment (ignored)
+## What this project is
+
+This is not a collection of random playbooks.
+
+It is a structured progression showing how to move from:
+- simple device changes  
+to  
+- controlled service deployment  
+
+Each lab builds on the previous one and introduces a new layer of operational thinking.
 
 ---
 
-## Requirements
+## Lab progression
 
-- Python 3.11
-- Ansible (>=10 recommended)
-- Juniper Ansible collections
-- NETCONF enabled on devices
+| Lab | Focus | What it shows |
+|-----|------|----------------|
+| 01 | Hostname automation | Basic inventory, variables, and first config push |
+| 02 | Config backup / restore | Operational safety and state capture |
+| 03 | OSPF → ISIS migration | Controlled change and staged rollout |
+| 04 | SP L3VPN deployment | Full underlay + overlay + service automation |
+
+Start at Lab 01 if you are new to this.  
+Jump to Lab 04 if you just want the full build.
 
 ---
 
-## Usage
+## What gets built (final lab)
 
-### Activate environment
+The final lab automates a full service provider L3VPN stack:
+
+- ISIS multi-area underlay  
+- MPLS + RSVP  
+- iBGP with route reflector  
+- PE–CE connectivity  
+- VRF service (cust-a)  
+
+All configuration is generated from structured data and deployed in stages.
+
+End-to-end validation is included (CE to CE reachability confirmed).
+
+---
+
+## How it works
+
+This project is built around a few key ideas:
+
+### 1. Data first
+Device configs are generated from structured data (`host_vars`, `group_vars`), not hardcoded CLI.
+
+### 2. Templates, not copy/paste
+Jinja templates are used to render:
+- base config
+- BGP overlay
+- VPN services
+
+### 3. Staged deployment
+The network is not pushed in one go.
+
+Typical flow:
+1. Base / CE prep  
+2. Underlay readiness  
+3. BGP overlay  
+4. VPN services  
+5. Validation  
+
+### 4. Operational awareness
+- Configs are rendered before deployment  
+- Merge vs set workflows are both supported  
+- Rollback is commit-aware (not blind rollback 1)  
+- Redeploy is used as a recovery strategy when needed  
+
+---
+
+## Repository structure
+
+labs/
+  01-hostname-automation/
+  02-config-backup-and-restore/
+  03-ospf-to-isis-migration/
+  04-sp-l3vpn-on-isis-multi-area/
+
+inventory/
+host_vars/
+group_vars/
+templates/
+roles/
+playbooks/
+docs/
+
+Each lab contains its own README with exact steps and expected results.
+
+## Getting started
+python3 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 
-### Push full config
-ansible-playbook -i inventory/hosts.yml playbooks/load_full_config.yml
+Update your inventory with device IPs and credentials, then run the playbooks from the relevant lab.
 
-### Pull configs
-ansible-playbook -i inventory/hosts.yml playbooks/pull_full_config.yml
+## Platform choice
 
-### Change hostnames
-ansible-playbook -i inventory/hosts.yml playbooks/set_hostname.yml
+This project uses Juniper vLabs for hands-on access.
 
----
+The focus is not on the vendor CLI, but on:
 
-## Notes
+automation patterns
+data modelling
+deployment workflow
 
-- Uses per-device ports for lab access
-- Credentials are currently stored in playbooks (lab only)
-- `.venv/`, `backups/`, and generated files are excluded from Git
-- This repo is intended to support multiple Juniper starter topologies, with OSPF Multi-area implemented first
+The same approach can be applied to other platforms.
 
----
+## Why this exists
 
-## Future Improvements
+Most automation examples stop at:
+“push config to device”
 
-- Jinja2 templates for config generation
-- Data-driven topology definitions
-- Config validation and drift detection
+Real networks don’t work like that.
 
-## Authentication
-- Authentication is intentionally excluded from rendered lab templates because reapplying local auth blocks breaks new logins in the JCL environment
+## This project is about:
 
-## Quick Config Load (Staging / Lab Bootstrap)
+building configs from data
+deploying in stages
+validating outcomes
+having a recovery approach
 
-This method is used to rapidly load full configurations onto lab routers.
-It is intended for quick lab setup or staging scenarios.
+## Author
 
-### Overview
-Uses per-router config files (cfg_file)
-Applies configs using load: override
-Replaces the entire device configuration
-Not part of the structured workflow (no validation or safety checks)
-Inventory Requirements
+Network engineer focused on service provider technologies and automation.
 
-Each host must define:
+Background includes:
 
-cfg_file: "../../vlabs/staging/vMX1-juniper.conf"
+SP routing (ISIS, BGP, MPLS, L3VPN, L2VPN, SRv6)
+Multi-vendor environments
+Automation using Python and Ansible
 
-Lab access (IP/port) is provided via:
+Contributor to technical content including Cisco Press and engineering blogs.
 
-inventory/lab_access.yml
-Playbook
+## Lab environment (no hardware needed)
 
-playbooks/load_staging_configs.yml
+This lab was built and tested using Juniper Cloud Labs (JCL).
+If you don’t have access to physical routers, no problem — JCL provides free, browser-based access to Juniper lab environments.
+You can spin up a topology, get device IP/port access, and run this lab exactly as shown here.
+- JCL environments use shared access (IP + port per device)
+- Labs can expire or reset, so inventory may need to be updated
+- Authentication is handled by the lab environment (not templated here)
 
-### Run Command
-ansible-playbook \
--i inventory/staging_load.yml \
--i inventory/lab_access.yml \
-playbooks/load_staging_configs.yml
-Optional: Test Single Router
---limit r1
+### Get access
 
-### Important Notes
-Uses load: override → replaces full configuration
-May overwrite authentication or access settings
-Ensure configs are correct before running
-Relative paths must be valid from the repository root
-Designed for lab use only (not production safe)
-Use Case
-Rapid lab rebuilds
-Loading vendor-provided configs
-Resetting topology to known state
+1. Go to : Juniper Cloud Labs (JCL) 
+2. Sign up for an account  
+3. Launch a lab (for example: `vMX` or `isis_multi_area`)  
+4. Use the provided IP/port details in your Ansible inventory  
 
-## Lab Workflows
-
-## Lab #1 OSPF Multi-area → ISIS Conversion
-
-This workflow converts a Juniper OSPF Multi-area starter lab into an ISIS underlay using templated configuration and Ansible orchestration.
-
-Key Concepts
-- Topology data is defined in:
-  - inventory/ospf_multi_area.yml
-- Lab access (IP/port) is defined in:
-  - inventory/lab_access.yml (changes per lab respin)
-- Authentication is NOT templated (lab-managed)
-
-Templates
-- templates/ospf_multi_area_base.j2
-- templates/ospf_multi_area_with_isis.j2
-
-Playbooks
-- playbooks/render_ospf_multi_area_with_isis.yml
-- playbooks/ospf_multi_area_to_isis.yml
-
-Workflow Steps
-1. Activate environment
-source .venv/bin/activate
-2. Verify connectivity
-ansible-playbook \
--i inventory/ospf_multi_area.yml \
--i inventory/lab_access.yml \
-playbooks/test_connectivity.yml \
---limit r1
-3. Render final configuration
-ansible-playbook \
--i inventory/ospf_multi_area.yml \
--i inventory/lab_access.yml \
-playbooks/render_ospf_multi_area_with_isis.yml \
---limit r1
-4. Convert router from OSPF to ISIS
-ansible-playbook \
--i inventory/ospf_multi_area.yml \
--i inventory/lab_access.yml \
-playbooks/ospf_multi_area_to_isis.yml \
---limit r1
-5. Repeat for additional routers
---limit r2
---limit r3
-
-Safety Notes
-- load override is avoided due to access issues in the lab environment
-
-Workflow uses:
-- explicit removal of OSPF
-- merge of final config
-- immediate verification
-- Authentication config is intentionally excluded from templates
-
-### Rendering Model Update
-
-Rendered configurations are now organized by stage:
-
-- `rendered/ospf_multi_area/base/`
-- `rendered/ospf_multi_area/transition/`
-
-This prevents configuration drift and ensures clear separation between:
-
-- base topology configuration
-- transition (OSPF → ISIS) configuration
-
-### Idempotent Workflow
-
-The OSPF-to-ISIS workflow is designed to be rerunnable:
-
-- OSPF removal is conditional (only executed if present)
-- Final configuration is merged safely
-- Playbook can be executed multiple times without failure
-
-## Lab #2 – ISIS Multi-Area Underlay + BGP/VPN Service Overlay
-
-Rendering rule for Lab #2:
-Underlay/core state is generated in bracket style.
-Overlay/service state is generated in set style.
-Top-level output folder stays rendered/ across all labs.
-Variation happens under that folder, by lab and by phase.
+## Future work
+automated validation checks
+CI linting / testing
+additional labs, services and VRFs
+deeper abstraction into reusable roles

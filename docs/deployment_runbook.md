@@ -192,7 +192,7 @@ If something breaks:
 * PE routers: `lab-r3`, `lab-r5`
 
 
-# SP L3VPN Deployment (ISIS Multi-Area Topology)
+# One-command SP L3VPN Deployment (ISIS Multi-Area Topology)
 
 ## Overview
 
@@ -324,5 +324,120 @@ show bgp summary
 End-to-end connectivity confirmed: `lab-r4 → 192.168.6.6`
 
 ---
+
+---
+## Recovery Strategy (Commit-Aware)
+
+Recovery must account for how many commits exist on each router.
+
+Do NOT blindly use `rollback 1`.
+
+---
+
+## Step 1 – Inspect commit history
+
+On the affected router:
+
+```bash
+show system commit
+```
+
+Example:
+
+```
+0   VPN services
+1   BGP overlay
+2   base config
+3   older config
+```
+
+---
+
+## Step 2 – Choose the correct rollback target
+
+### Case A – Multi-stage routers (e.g. r3, r5)
+
+Use rollback selectively by layer:
+
+| Goal                | Command      |
+| ------------------- | ------------ |
+| Remove VPN only     | `rollback 1` |
+| Remove VPN + BGP    | `rollback 2` |
+| Return to base only | `rollback 3` |
+
+Example:
+
+```bash
+configure
+rollback 1
+commit
+```
+
+---
+
+### Case B – Single-commit routers (e.g. r1)
+
+If only one meaningful commit exists:
+
+* `rollback 1` may revert too far
+* commit history may not match deployment stages
+
+👉 In this case, DO NOT rely on rollback alone.
+
+Use redeploy instead.
+
+---
+
+## Step 3 – Preferred recovery order
+
+### 1. Targeted rollback (best case)
+
+Use when:
+
+* commit history is clear
+* you know which layer failed
+
+---
+
+### 2. Redeploy known-good configuration
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area.yml
+```
+
+Use when:
+
+* router state is inconsistent
+* commit history is unclear
+* multiple changes have been applied
+
+---
+
+### 3. Full reset (last resort)
+
+Use JCL baseline reset only when:
+
+* device is badly broken
+* access/config is corrupted
+* rollback/redeploy are insufficient
+
+---
+
+## Key Rules
+
+1. Always run `show system commit` first
+2. Never assume rollback numbers
+3. Prefer **surgical rollback** over full reset
+4. If unsure → redeploy instead of guessing
+
+---
+
+## Mental Model
+
+* **Rollback** = undo last change(s)
+* **Redeploy** = restore desired state
+* **Reset** = wipe to factory baseline
+
+Use the least destructive option first.
 
 ---

@@ -5,29 +5,34 @@
   connection: local
 
   vars:
-    junos_user: jcluser
-    junos_passwd: Juniper!1
+    junos_user: "jcluser"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
 
   tasks:
     - name: Set system host-name
+      no_log: true
       juniper.device.config:
         host: "{{ ansible_host }}"
-        user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         load: set
         lines:
-          - "set system host-name {{ hostname }}"
+          - "set system host-name {{ inventory_hostname }}"
         comment: "Set hostname from Ansible lab"
         commit: true
-      register: config_result
 
     - name: Verify hostname
+      no_log: true
       juniper.device.command:
         host: "{{ ansible_host }}"
-        user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
         port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         commands:
           - "show configuration system host-name | display set"
       register: verify_result

@@ -1,0 +1,3 @@
+ansible_connection: local
+junos_user: "{{ lookup('env', 'JUNOS_USER') }}"
+junos_passwd: "{{ lookup('env', 'JUNOS_PASSWD') }}"

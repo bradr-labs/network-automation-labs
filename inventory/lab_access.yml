@@ -4,19 +4,19 @@ all:
       hosts:
         r1:
           ansible_host: 66.129.235.202
-          ansible_port: 37009
+          ansible_port: 34009
         r2:
           ansible_host: 66.129.235.202
-          ansible_port: 37012
+          ansible_port: 34012
         r3:
           ansible_host: 66.129.235.202
-          ansible_port: 37015
+          ansible_port: 34015
         r4:
           ansible_host: 66.129.235.202
-          ansible_port: 37018
+          ansible_port: 34018
         r5:
           ansible_host: 66.129.235.202
-          ansible_port: 37021
+          ansible_port: 34021
         r6:
           ansible_host: 66.129.235.202
-          ansible_port: 37024
+          ansible_port: 34024
