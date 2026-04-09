@@ -20,6 +20,11 @@ to
 
 Each lab builds on the previous one and introduces a new layer of operational thinking.
 
+| Lab | Focus                               | What it shows                                                         |
+|-----|-------------------------------------|-----------------------------------------------------------------------|
+| 01 | Hostname automation                  | Basic inventory, NETCONF access, and first config push                |
+| 02 | Config backup and controlled restore | State capture, lab rebuilds, and controlled config replacement        |
+| 03 | Controlled OSPF to ISIS migration    | Staged rendering, explicit protocol removal, and idempotent migration |
 ---
 
 ## Lab progression

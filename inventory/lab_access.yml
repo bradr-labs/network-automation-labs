@@ -3,21 +3,21 @@ all:
     junos:
       hosts:
         r1:
-          ansible_host: 66.129.235.202
-          ansible_port: 34009
+          ansible_host: 66.129.235.200
+          ansible_port: 39009
           cfg_file: "../staging/vMX1-juniper.conf"
         r2:
-          ansible_host: 66.129.235.202
-          ansible_port: 34012
+          ansible_host: 66.129.235.200
+          ansible_port: 39012
         r3:
-          ansible_host: 66.129.235.202
-          ansible_port: 34015
+          ansible_host: 66.129.235.200
+          ansible_port: 39015
         r4:
-          ansible_host: 66.129.235.202
-          ansible_port: 34018
+          ansible_host: 66.129.235.200
+          ansible_port: 39018
         r5:
-          ansible_host: 66.129.235.202
-          ansible_port: 34021
+          ansible_host: 66.129.235.200
+          ansible_port: 39021
         r6:
-          ansible_host: 66.129.235.202
-          ansible_port: 34024
+          ansible_host: 66.129.235.200
+          ansible_port: 39024

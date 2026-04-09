@@ -89,7 +89,7 @@ all:
 
 
         r6:
-          hostname: lab-r5
+          hostname: lab-r6
           loopback_ip: 10.100.100.6
           fxp0_ip: 100.123.1.5/16
           default_route_next_hop: 100.123.0.1
