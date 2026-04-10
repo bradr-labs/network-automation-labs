@@ -188,11 +188,25 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 3. Launch a lab (for example: `vMX` or `isis_multi_area`)  
 4. Use the provided IP/port details in your Ansible inventory  
 
-## Future work
-- automated validation checks
-- CI linting / testing
-- additional labs, services and VRFs
-- deeper abstraction into reusable roles
+## Future Labs
+
+This repository is designed as an evolving series.
+
+Planned extensions include:
+
+### Lab 05 – BGP Multi-AS Design
+- Inter-AS routing architecture
+- Policy boundaries and route control
+- eBGP session design across domains
+- Controlled multi-AS deployment workflow
+
+### Lab 06 – BGP-Based Transport Modeling
+- Classful / segmented transport design
+- Route propagation boundaries
+- Service reachability across constrained domains
+- Overlay behavior on non-uniform underlay
+
+These labs extend the progression from single-domain automation toward multi-domain and policy-driven network design.
 
 ## Author
 
