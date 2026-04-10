@@ -61,10 +61,6 @@ This makes it possible to preserve the current lab state before moving into anot
 
 ---
 
-## Inventory model
-
-This lab uses the same JCL inventory model as Lab 01.
-
 ### Example
 
 ```yaml
@@ -146,7 +142,7 @@ Each router must define a cfg_file value pointing to the configuration file that
 
 In this project, cfg_file is defined directly in:
 
-`inventory/lab_access.yml`
+- `inventory/lab_access.yml`
 
 ```yaml
 Example
@@ -168,7 +164,7 @@ This allows per-router control of what configuration is applied.
 
 For this lab, staging configs are pre-saved from a previous lab state.
 
-Example files
+Example files:
 - `staging/vMX1-juniper.conf`
 - `staging/vMX2-juniper.conf`
 ...
@@ -199,6 +195,7 @@ ansible-playbook -i inventory/lab_access.yml playbooks/restore_known_config.yml
 You will be prompted for the device password at runtime.
 
 ## Expected result
+
 After backup:
 
 The current running configuration is saved locally.
@@ -208,24 +205,23 @@ After restore:
 The router is committed into the new target configuration state.
 
 ## Validation
+
 Backup
 
 Confirm that .conf files exist in:
 
-`backups/`
+- `backups/`
 
 ## Restore
 
 Verify on the device:
 
-```markdown
 ```bash
 show configuration system host-name
 ```
 
 Or compare changes:
 
-```markdown
 ```bash
 show configuration | compare rollback 1
 ```

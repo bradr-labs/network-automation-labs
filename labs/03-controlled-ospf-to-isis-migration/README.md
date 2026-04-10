@@ -20,10 +20,9 @@ This lab is based on the Juniper Cloud Labs (JCL) OSPF Multi-Area topology.
 
 It uses two inventory sources:
 
-```text
-inventory/ospf_multi_area.yml
-inventory/lab_access.yml
-```
+- `inventory/ospf_multi_area.yml`
+- `inventory/lab_access.yml`
+
 
 ## Roles of each inventory
 
@@ -193,6 +192,7 @@ The migration workflow is designed to be rerunnable:
 ```bash
 source .venv/bin/activate
 ```
+
 ### 2. Verify connectivity
 
 ```bash
@@ -288,7 +288,7 @@ show configuration protocols isis
 
 ## Notes
 Authentication is intentionally excluded from templates
-Lab access is managed separately through inventory/lab_access.yml
+Lab access is managed separately through `inventory/lab_access.yml`
 This workflow is designed for controlled lab migration, not production rollout
 Migrate one router at a time to keep the change observable and recoverable
 

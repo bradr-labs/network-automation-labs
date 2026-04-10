@@ -70,7 +70,7 @@ When the lab respins, both the IP address and ports change.
 
 ## Inventory file
 
-`inventory/lab_access.yml`
+- `inventory/lab_access.yml`
 
 ```yaml
 Example
@@ -127,7 +127,6 @@ The playbook:
 - verifies the result
 
 ## How to run it
-
 
 ### 1. Activate the environment
 
