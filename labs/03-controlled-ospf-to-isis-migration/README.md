@@ -190,13 +190,11 @@ The migration workflow is designed to be rerunnable:
 
 ### 1. Activate environment
 
-```markdown
 ```bash
 source .venv/bin/activate
 ```
 ### 2. Verify connectivity
 
-```markdown
 ```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
@@ -207,7 +205,6 @@ playbooks/test_connectivity.yml \
 
 ### 3. Render base configuration
 
-```markdown
 ```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
@@ -218,7 +215,6 @@ playbooks/render_base.yml \
 
 ### 4. Apply base configuration
 
-```markdown
 ```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
@@ -231,7 +227,6 @@ This step ensures the router is in a known baseline state before migration.
 
 ### 5. Render transition configuration (OSPF → ISIS)
 
-```markdown
 ```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
@@ -242,7 +237,6 @@ playbooks/render_ospf_multi_area_with_isis.yml \
 
 ### 6. Perform protocol migration
 
-```markdown
 ```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
@@ -259,7 +253,6 @@ This step:
 
 ### 7. Repeat per router
 
-```markdown
 ```bash
 --limit r2
 --limit r3
@@ -279,7 +272,6 @@ After each migration step, validate that:
 
 Useful checks include:
 
-```markdown
 ```bash
 show isis adjacency
 show route
@@ -289,7 +281,6 @@ ping <remote loopback>
 
 The migration playbook also includes immediate post-change checks such as:
 
-```markdown
 ```bash
 show version
 show configuration protocols isis

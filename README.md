@@ -1,8 +1,21 @@
-# SP L3VPN Automation Lab (Juniper vLabs)
+# Network Automation Lab Series  
+### Model-Driven Infrastructure Deployment with Ansible (Junos)
+
+---
+
+## Overview
 
 A hands-on network automation project built on Juniper vLabs.
 
-This repo walks through a progression from basic Ansible tasks to a full service provider L3VPN deployment using structured data, templating, and staged rollout.
+Rather than treating devices as individual configuration targets, this project builds networks as **systems**, using:
+
+- structured topology data  
+- configuration rendering  
+- staged deployment workflows  
+- safe, repeatable change execution  
+
+The labs progress from simple configuration tasks to a full **Service Provider L3VPN deployment** built using a layered model.
+
 
 The goal is simple:
 build something that looks closer to real operations than “run this playbook and hope”.
@@ -18,26 +31,49 @@ It is a structured progression showing how to move from:
 to  
 - controlled service deployment  
 
-Each lab builds on the previous one and introduces a new layer of operational thinking.
+It demonstrates:
 
-| Lab | Focus                               | What it shows                                                         |
-|-----|-------------------------------------|-----------------------------------------------------------------------|
-| 01 | Hostname automation                  | Basic inventory, NETCONF access, and first config push                |
-| 02 | Config backup and controlled restore | State capture, lab rebuilds, and controlled config replacement        |
-| 03 | Controlled OSPF to ISIS migration    | Staged rendering, explicit protocol removal, and idempotent migration |
----
+- **model-driven configuration rendering** (data → templates → device configs)  
+- **separation of underlay and overlay** responsibilities  
+- **staged deployment workflows** (render → deploy)  
+- **safe configuration strategies** (`merge` and `set`, no destructive overrides)  
+- **idempotent automation design**  
+- **failure isolation and recovery strategy**  
+
+## Why this exists
+
+Most automation examples stop at:
+“push config to device”
+
+Real networks don’t work like that.
+
+## Platform choice
+
+This project uses Juniper vLabs for hands-on access.
+
+The focus is not on the vendor CLI, but on:
+
+- automation patterns
+- data modelling
+- deployment workflow
+
+The same approach can be applied to other platforms.
 
 ## Lab progression
 
-| Lab | Focus | What it shows |
-|-----|------|----------------|
-| 01 | Hostname automation | Basic inventory, variables, and first config push |
-| 02 | Config backup / restore | Operational safety and state capture |
-| 03 | OSPF → ISIS migration | Controlled change and staged rollout |
-| 04 | SP L3VPN deployment | Full underlay + overlay + service automation |
+Each lab builds on the previous one and introduces a new layer of operational thinking.
+
+| Lab | Focus                                | What it shows                                                         |
+|-----|--------------------------------------|-----------------------------------------------------------------------|
+| 01  | Hostname automation                  | Basic inventory, NETCONF access, and first config push                |
+| 02  | Config backup and controlled restore | State capture, lab rebuilds, and controlled config replacement        |
+| 03  | Controlled OSPF to ISIS migration    | Staged rendering, explicit protocol removal, and idempotent migration |
+| 04  | Full SP L3VPN deployment             | Full underlay + overlay + service automation                          |
 
 Start at Lab 01 if you are new to this.  
 Jump to Lab 04 if you just want the full build.
+
+Each lab contains its own README with exact steps and expected results.
 
 ---
 
@@ -57,60 +93,76 @@ End-to-end validation is included (CE to CE reachability confirmed).
 
 ---
 
-## How it works
+## Deployment is staged
 
-This project is built around a few key ideas:
+Changes are applied in controlled phases:
 
-### 1. Data first
+CE → Core → BGP → VPN
 
-Device configs are generated from structured data (`host_vars`, `group_vars`), not hardcoded CLI.
+This avoids:
 
-### 2. Templates, not copy/paste
+- broken adjacencies
+- partial control-plane state
+- service deployment without transport
 
-Jinja templates are used to render:
-- base config
-- BGP overlay
-- VPN services
+## Safe execution model
 
-### 3. Staged deployment
+This project intentionally avoids:
 
-The network is not pushed in one go.
+```bash
+load: override
+```
 
-Typical flow:
-1. Base / CE prep  
-2. Underlay readiness  
-3. BGP overlay  
-4. VPN services  
-5. Validation  
+Instead it uses:
 
-### 4. Operational awareness
+- merge for structured configs
+- set for incremental changes
 
-- Configs are rendered before deployment  
-- Merge vs set workflows are both supported  
-- Rollback is commit-aware (not blind rollback 1)  
-- Redeploy is used as a recovery strategy when needed  
+This preserves access and reduces risk during deployment.
 
----
+## How to run (fast path)
 
-## Repository structure
+### 1. Full deployment (Lab 04)
 
-labs/
-  01-hostname-automation/
-  02-config-backup-and-restore/
-  03-ospf-to-isis-migration/
-  04-sp-l3vpn-on-isis-multi-area/
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area.yml
+```
 
-inventory/
-host_vars/
-group_vars/
-templates/
-roles/
-playbooks/
-docs/
+### 2. Staged deployment (recommended for learning/debugging)
 
-Each lab contains its own README with exact steps and expected results.
+Render configs:
+
+```bash
+ansible-playbook -i inventory/isis_multi_area.yml playbooks/render_isis_multi_area__ce.yml
+ansible-playbook -i inventory/isis_multi_area.yml playbooks/render_isis_multi_area__base.yml
+ansible-playbook -i inventory/isis_multi_area.yml playbooks/render_isis_multi_area__bgp.yml
+ansible-playbook -i inventory/isis_multi_area.yml playbooks/render_isis_multi_area__vpn.yml
+```
+
+Deploy in order:
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area__ce.yml
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area__base.yml
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area__bgp.yml
+ansible-playbook -i inventory/lab_access.yml playbooks/deploy_sp_l3vpn_on_isis_multi_area__vpn.yml
+```
+
+## Verification
+
+End-to-end connectivity is validated across the L3VPN service.
+
+Example:
+
+- `ping 192.168.6.6`
+
+Expected:
+
+successful CE-to-CE communication across the provider network
 
 ## Getting started
+
+Setup the environment:
 
 ```bash
 python3 -m venv .venv
@@ -119,43 +171,6 @@ pip install -r requirements.txt
 ```
 
 Update your inventory with device IPs and credentials, then run the playbooks from the relevant lab.
-
-## Platform choice
-
-This project uses Juniper vLabs for hands-on access.
-
-The focus is not on the vendor CLI, but on:
-
-- automation patterns
-- data modelling
-- deployment workflow
-
-The same approach can be applied to other platforms.
-
-## Why this exists
-
-Most automation examples stop at:
-“push config to device”
-
-Real networks don’t work like that.
-
-## This project is about:
-
-- building configs from data
-- deploying in stages
-- validating outcomes
-- having a recovery approach
-
-## Author
-
-Network engineer focused on service provider technologies and automation.
-
-Background includes:
-
-- SP routing (ISIS, BGP, MPLS, L3VPN, L2VPN, SRv6)
-- Multi-vendor environments
-- Automation using Python and Ansible
-- Contributor to technical content including Cisco Press and engineering blogs.
 
 ## Lab environment (no hardware needed)
 
@@ -178,3 +193,14 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 - CI linting / testing
 - additional labs, services and VRFs
 - deeper abstraction into reusable roles
+
+## Author
+
+Network engineer focused on service provider technologies and automation.
+
+Background includes:
+
+- SP routing (ISIS, BGP, MPLS, L3VPN, L2VPN, SRv6)
+- Multi-vendor environments
+- Automation using Python and Ansible
+- Contributor to technical content including Cisco Press and engineering blogs.

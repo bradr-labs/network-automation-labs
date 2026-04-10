@@ -6,7 +6,11 @@
 
   vars:
     junos_user: jcluser
-    junos_passwd: "Juniper!1"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
 
   tasks:
     - name: Render final config
@@ -18,7 +22,7 @@
       juniper.device.command:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         commands:
           - "show configuration protocols ospf"
@@ -32,7 +36,7 @@
       juniper.device.config:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         load: set
         lines:
@@ -47,7 +51,7 @@
       juniper.device.config:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         load: merge
         src: ../rendered/ospf_multi_area/transition/{{ inventory_hostname }}-final.conf
@@ -57,7 +61,7 @@
       juniper.device.command:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         commands:
           - "show version"
@@ -67,7 +71,7 @@
       juniper.device.command:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         commands:
           - "show configuration protocols isis"

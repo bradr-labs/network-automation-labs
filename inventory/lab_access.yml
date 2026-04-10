@@ -4,25 +4,25 @@ all:
       hosts:
         r1:
           ansible_host: 66.129.235.200
-          ansible_port: 46009
+          ansible_port: 35009
           cfg_file: "../staging/vMX1-juniper.conf"
         r2:
           ansible_host: 66.129.235.200
-          ansible_port: 46012
+          ansible_port: 35012
           cfg_file: "../staging/vMX2-juniper.conf"
         r3:
           ansible_host: 66.129.235.200
-          ansible_port: 46015
+          ansible_port: 35015
           cfg_file: "../staging/vMX3-juniper.conf"
         r4:
           ansible_host: 66.129.235.200
-          ansible_port: 46018
+          ansible_port: 35018
           cfg_file: "../staging/vMX4-juniper.conf"
         r5:
           ansible_host: 66.129.235.200
-          ansible_port: 46021
+          ansible_port: 35021
           cfg_file: "../staging/vMX5-juniper.conf"
         r6:
           ansible_host: 66.129.235.200
-          ansible_port: 46024
+          ansible_port: 35024
           cfg_file: "../staging/vMX6-juniper.conf"
