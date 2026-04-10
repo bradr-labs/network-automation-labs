@@ -1,5 +1,7 @@
 # Lab 03 - Controlled OSPF to ISIS Migration
 
+A staged, idempotent workflow for migrating a live underlay from OSPF to ISIS using Ansible.
+
 ## Objective
 
 Migrate a multi-area OSPF underlay to ISIS using a controlled, staged automation workflow.
@@ -18,13 +20,15 @@ This lab is based on the Juniper Cloud Labs (JCL) OSPF Multi-Area topology.
 
 It uses two inventory sources:
 
+```text
 inventory/ospf_multi_area.yml
 inventory/lab_access.yml
+```
 
-## Roles of each inventory:
+## Roles of each inventory
 
-inventory/ospf_multi_area.yml defines topology and per-device data
-inventory/lab_access.yml defines the JCL IP/port access model
+- `inventory/ospf_multi_area.yml` — topology and per-device data  
+- `inventory/lab_access.yml` — JCL IP/port access model
 
 This lab assumes:
 
@@ -66,7 +70,7 @@ This separation ensures:
 
 Topology and device data are defined in:
 
-inventory/ospf_multi_area.yml
+- `inventory/ospf_multi_area.yml`
 
 This includes values such as:
 
@@ -77,7 +81,9 @@ This includes values such as:
 - ISO address
 - underlay interface addressing
 
-Example
+### Example
+
+```yaml
 r1:
   hostname: lab-r1
   loopback_ip: 10.100.100.1
@@ -90,6 +96,7 @@ r1:
       address: 10.100.12.1/24
     - name: ge-0/0/1
       address: 10.100.14.1/24
+```
 
 This keeps topology intent separate from the migration logic.
 
@@ -97,20 +104,20 @@ This keeps topology intent separate from the migration logic.
 
 This workflow uses:
 
-templates/ospf_multi_area_base.j2
-templates/ospf_multi_area_with_isis.j2
+- `templates/ospf_multi_area_base.j2`
+- `templates/ospf_multi_area_with_isis.j2`
 
 The rendered transition configuration is built from topology data and written locally before deployment.
 
 ## Files used
 
-playbooks/render_ospf_multi_area_with_isis.yml
-playbooks/ospf_multi_area_to_isis.yml
-playbooks/test_connectivity.yml
-inventory/ospf_multi_area.yml
-inventory/lab_access.yml
-templates/ospf_multi_area_with_isis.j2
-rendered/ospf_multi_area/transition/
+- `playbooks/render_ospf_multi_area_with_isis.yml`
+- `playbooks/ospf_multi_area_to_isis.yml`
+- `playbooks/test_connectivity.yml`
+- `inventory/ospf_multi_area.yml`
+- `inventory/lab_access.yml`
+- `templates/ospf_multi_area_with_isis.j2`
+- `rendered/ospf_multi_area/transition/`
 
 ## Rendering model
 
@@ -129,13 +136,15 @@ Instead, it builds toward the ISIS underlay in controlled stages.
 
 ## Key design decisions
 
-No load: override
+### No `load: override`
 
 Unlike Lab 02, this workflow avoids full configuration replacement.
 
 It does not use:
 
+```text
 load: override
+```
 
 This reduces the risk of:
 
@@ -159,7 +168,9 @@ This keeps the migration predictable and rerunnable.
 
 The final rendered configuration is applied using:
 
+```text
 load: merge
+```
 
 This allows:
 
@@ -178,44 +189,67 @@ The migration workflow is designed to be rerunnable:
 ## Workflow
 
 ### 1. Activate environment
-source .venv/bin/activate
 
+```markdown
+```bash
+source .venv/bin/activate
+```
 ### 2. Verify connectivity
+
+```markdown
+```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/test_connectivity.yml \
 --limit r1
+```
 
 ### 3. Render base configuration
+
+```markdown
+```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/render_base.yml \
 --limit r1
+```
 
 ### 4. Apply base configuration
+
+```markdown
+```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/load_ospf_multi_area_base.yml \
 --limit r1
+```
 
 This step ensures the router is in a known baseline state before migration.
 
 ### 5. Render transition configuration (OSPF → ISIS)
+
+```markdown
+```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/render_ospf_multi_area_with_isis.yml \
 --limit r1
+```
 
 ### 6. Perform protocol migration
+
+```markdown
+```bash
 ansible-playbook \
 -i inventory/ospf_multi_area.yml \
 -i inventory/lab_access.yml \
 playbooks/ospf_multi_area_to_isis.yml \
 --limit r1
+```
 
 This step:
 
@@ -224,9 +258,13 @@ This step:
 - verifies the result
 
 ### 7. Repeat per router
+
+```markdown
+```bash
 --limit r2
 --limit r3
 ...
+```
 
 Migrate one router at a time to maintain control.
 
@@ -241,15 +279,21 @@ After each migration step, validate that:
 
 Useful checks include:
 
+```markdown
+```bash
 show isis adjacency
 show route
 show configuration protocols isis
 ping <remote loopback>
+```
 
 The migration playbook also includes immediate post-change checks such as:
 
+```markdown
+```bash
 show version
 show configuration protocols isis
+```
 
 ## Notes
 Authentication is intentionally excluded from templates

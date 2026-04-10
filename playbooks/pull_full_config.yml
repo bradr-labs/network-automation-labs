@@ -34,4 +34,4 @@
     - name: Save config as .conf file
       ansible.builtin.copy:
         content: "{{ config_output.stdout }}"
-        dest: "backups/{{ inventory_hostname }}.conf"
+        dest: "../backups/{{ inventory_hostname }}.conf"

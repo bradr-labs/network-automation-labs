@@ -6,15 +6,20 @@
 
   vars:
     junos_user: jcluser
-    junos_passwd: "Juniper!1"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
 
   tasks:
     - name: Push rendered config with merge
       juniper.device.config:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
+        ssh_config: "/tmp/blank_ssh_config"
         src: "{{ cfg_file }}"
         load: merge
         comment: "Load rendered config (merge)"

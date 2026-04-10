@@ -6,14 +6,18 @@
 
   vars:
     junos_user: jcluser
-    junos_passwd: Juniper!1
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
 
   tasks:
     - name: Ping 10.100.100.2 from router
       juniper.device.ping:
         host: "{{ ansible_host }}"
         user: "{{ junos_user }}"
-        passwd: "{{ junos_passwd }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
         port: "{{ ansible_port }}"
         dest: 10.100.100.2 
       register: result

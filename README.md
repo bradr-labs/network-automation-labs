@@ -62,15 +62,18 @@ End-to-end validation is included (CE to CE reachability confirmed).
 This project is built around a few key ideas:
 
 ### 1. Data first
+
 Device configs are generated from structured data (`host_vars`, `group_vars`), not hardcoded CLI.
 
 ### 2. Templates, not copy/paste
+
 Jinja templates are used to render:
 - base config
 - BGP overlay
 - VPN services
 
 ### 3. Staged deployment
+
 The network is not pushed in one go.
 
 Typical flow:
@@ -81,6 +84,7 @@ Typical flow:
 5. Validation  
 
 ### 4. Operational awareness
+
 - Configs are rendered before deployment  
 - Merge vs set workflows are both supported  
 - Rollback is commit-aware (not blind rollback 1)  
@@ -107,9 +111,12 @@ docs/
 Each lab contains its own README with exact steps and expected results.
 
 ## Getting started
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
 
 Update your inventory with device IPs and credentials, then run the playbooks from the relevant lab.
 
@@ -119,9 +126,9 @@ This project uses Juniper vLabs for hands-on access.
 
 The focus is not on the vendor CLI, but on:
 
-automation patterns
-data modelling
-deployment workflow
+- automation patterns
+- data modelling
+- deployment workflow
 
 The same approach can be applied to other platforms.
 
@@ -134,10 +141,10 @@ Real networks don’t work like that.
 
 ## This project is about:
 
-building configs from data
-deploying in stages
-validating outcomes
-having a recovery approach
+- building configs from data
+- deploying in stages
+- validating outcomes
+- having a recovery approach
 
 ## Author
 
@@ -145,11 +152,10 @@ Network engineer focused on service provider technologies and automation.
 
 Background includes:
 
-SP routing (ISIS, BGP, MPLS, L3VPN, L2VPN, SRv6)
-Multi-vendor environments
-Automation using Python and Ansible
-
-Contributor to technical content including Cisco Press and engineering blogs.
+- SP routing (ISIS, BGP, MPLS, L3VPN, L2VPN, SRv6)
+- Multi-vendor environments
+- Automation using Python and Ansible
+- Contributor to technical content including Cisco Press and engineering blogs.
 
 ## Lab environment (no hardware needed)
 
@@ -168,7 +174,7 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 4. Use the provided IP/port details in your Ansible inventory  
 
 ## Future work
-automated validation checks
-CI linting / testing
-additional labs, services and VRFs
-deeper abstraction into reusable roles
+- automated validation checks
+- CI linting / testing
+- additional labs, services and VRFs
+- deeper abstraction into reusable roles
