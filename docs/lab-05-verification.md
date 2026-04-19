@@ -40,7 +40,7 @@ inet.0: 18 destinations, 30 routes (18 active, 0 holddown, 0 hidden)
 
 ## 2. Verify Both Paths Are Received on AS64522
 Direct path (AS64544 → AS64522)
-show route receive-protocol bgp 10.100.25.2 10.100.56.0/24 detail
+`show route receive-protocol bgp 10.100.25.2 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -54,7 +54,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 Transit path (AS64544 → AS64533 → AS64522)
-show route receive-protocol bgp 10.100.24.2 10.100.56.0/24 detail
+`show route receive-protocol bgp 10.100.24.2 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -68,8 +68,8 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 Loopback validation (optional but recommended)
-show route receive-protocol bgp 10.100.25.2 10.100.100.6/32 detail
-show route receive-protocol bgp 10.100.24.2 10.100.100.6/32 detail
+`show route receive-protocol bgp 10.100.25.2 10.100.100.6/32 detail`
+`show route receive-protocol bgp 10.100.24.2 10.100.100.6/32 detail`
 
 Output:
 ```bash
@@ -91,7 +91,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 ## 3. Verify Best Path Selection
-show route 10.100.56.0/24 detail
+`show route 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -162,7 +162,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
                 Thread: junos-main 
 ```
 
-show route 10.100.100.6/32 detail
+`show route 10.100.100.6/32 detail`
 Output:
 ```bash
 jcluser@vMX2> show route 10.100.100.6/32 detail 
@@ -231,6 +231,11 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
                 Router ID: 10.100.100.5
                 Thread: junos-main 
 ```
+
+The inactive direct path explicitly shows:
+- `Inactive reason: Local Preference`
+
+This confirms that policy, not topology or reachability, determines path selection.
 
 ## 4. Expected Behavior
 
