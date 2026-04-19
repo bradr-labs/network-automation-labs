@@ -50,9 +50,7 @@ Explicit import/export behavior
 No default “permit all” routing
 Prefix advertisement restricted by policy objects
 3. Drift Detection Before Deployment
-Compare intended config vs actual device state
-Detect unauthorized or manual changes
-Prevent blind configuration pushes
+Uses collected live configuration as the baseline for comparison
 4. Safe Deployment Workflow
 Render → Compare → Review → Deploy → Validate
 Deployment gated by drift status
@@ -176,16 +174,24 @@ interface-level config outside BGP scope
 The operator workflow for Lab 05 is:
 
 1. Render intended configuration from data
-2. Collect current device configuration
-3. Compare intended vs actual (managed sections only)
+2. Collect current device configuration (managed sections only)
+3. Compare intended vs actual configuration
 4. Review drift report
-5. Deploy candidate configuration
-6. Validate BGP and policy outcomes
-Key Behavior
-Deployment should not proceed blindly
+5. Deploy policy configuration (controlled change)
+6. Validate routing behavior and policy outcomes
+7. Re-collect and verify that intended state matches actual state
+
+### Key Behavior
+
+Deployment should not proceed blindly.
+
 Drift must be:
-resolved, or
-explicitly accepted
+- resolved, or
+- explicitly accepted
+
+After deployment:
+- intended and actual configuration should converge
+- no unmanaged drift should remain within the controlled scope
 
 ## 8. Data Model Strategy
 
