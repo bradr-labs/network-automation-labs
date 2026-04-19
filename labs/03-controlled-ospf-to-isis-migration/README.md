@@ -122,8 +122,10 @@ The rendered transition configuration is built from topology data and written lo
 
 Rendered configurations are separated by stage:
 
+```text
 rendered/ospf_multi_area/base/
 rendered/ospf_multi_area/transition/
+```
 
 This separates:
 

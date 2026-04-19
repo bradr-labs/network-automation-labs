@@ -14,6 +14,21 @@ The goal is to move beyond “pushing config” and toward **controlled, validat
 
 ---
 
+## Key Outcome
+
+This lab enforces deterministic path selection using BGP policy:
+
+- The same prefixes are learned via both **direct** and **transit** paths
+- Transit paths (via AS65333) are preferred using **higher local preference**
+- Direct paths remain available as **backup**
+
+Example:
+
+- Transit path: local-pref **250** → selected
+- Direct path: local-pref **175** → inactive (Local Preference)
+
+This demonstrates controlled routing behavior driven entirely by policy.
+
 ## Topology Context
 
 This lab reuses the existing BGP - Multi-AS topology from Juniper vLabs.
@@ -61,7 +76,7 @@ This lab demonstrates:
 
 The lab follows a structured operator workflow:
 
-render → collect → compare → review → deploy → validate
+render → collect → compare → review → deploy → validate → re-collect
 
 
 ### Steps
@@ -182,8 +197,18 @@ The lab is successful when:
 - Drift is detected before deployment
 - Changes are applied in a controlled manner
 - Post-deployment validation confirms expected routing behavior
+- Policy-driven path selection is observable in the routing table:
+  - Transit-learned routes are active
+  - Direct routes are present but inactive
+  - Inactive reason reflects **Local Preference**
 
 ---
+
+## Verification
+
+Detailed CLI validation, including full command output and path selection proof, is documented here:
+
+`docs/lab-05-verification.md`
 
 ## Position in the Series
 
@@ -200,3 +225,71 @@ This marks the shift from:
 to
 
 > “Automating network behavior safely”
+
+## How to Run the Lab
+
+### Prerequisites
+
+- Active Juniper vLabs instance (BGP Multi-AS topology)
+- Updated `inventory/lab_access.yml` with current host/port mappings
+- Python virtual environment with Ansible and `juniper.device` collection
+
+---
+
+### Workflow Execution
+
+Run the lab using the following sequence:
+
+#### 1. Render intended configuration
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_render.yml
+```
+
+### 2. Collect current device state
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_collect.yml
+```
+
+### 3. Compare intended vs actual
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_compare.yml
+```
+
+Review diffs under:
+
+`staging/lab05/diffs/`
+
+### 4. Deploy policy configuration (safe)
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_deploy.yml
+```
+- Performs commit check before applying changes
+- Applies policy-only configuration
+
+
+### 5. Validate routing behavior
+
+Run CLI verification steps:
+
+- `show route receive-protocol bgp <neighbor> <prefix> detail`
+- `show route <prefix> detail`
+
+Expected:
+
+transit path selected (higher local preference)
+direct path present but inactive
+
+### 6. Re-collect and confirm convergence
+
+```bash
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_collect.yml
+ansible-playbook -i inventory/lab_access.yml playbooks/lab05_compare.yml
+```
+
+Expected:
+
+minimal or no diff between intended and actual state
