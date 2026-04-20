@@ -116,12 +116,14 @@ Structure varies by lab and deployment phase.
 
 ### Lab 04 structure:
 
+```text
 rendered/
   isis_multi_area/
     base/
     ce/
     bgp/
     vpn/
+```
 
 ### Rules/Config types
 

@@ -9,3 +9,6 @@ rendered/
 .DS_Store
 *.bak
 staging/
+labs/05-policy-driven-bgp-drift-detection/
+docs/lab-05-*.md
+playbooks/lab05_*.yml
