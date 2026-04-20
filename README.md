@@ -14,8 +14,7 @@ Rather than treating devices as individual configuration targets, this project b
 - staged deployment workflows  
 - safe, repeatable change execution  
 
-The labs progress from simple configuration tasks to a full **Service Provider L3VPN deployment** built using a layered model.
-
+The labs progress from simple configuration tasks to a full **Service Provider L3VPN deployment** built using a layered model and then into **policy-driven routing control with drift-aware operations**.
 
 The goal is simple:
 build something that looks closer to real operations than “run this playbook and hope”.
@@ -38,7 +37,8 @@ It demonstrates:
 - **staged deployment workflows** (render → deploy)  
 - **safe configuration strategies** (`merge` and `set`, no destructive overrides)  
 - **idempotent automation design**  
-- **failure isolation and recovery strategy**  
+- **failure isolation and recovery strategy**
+- **drift-aware operational workflow** (render → collect → compare → deploy → verify)  
 
 ## Why this exists
 
@@ -63,17 +63,17 @@ The same approach can be applied to other platforms.
 
 Each lab builds on the previous one and introduces a new layer of operational thinking.
 
-| Lab | Focus                                | What it shows                                                         |
-|-----|--------------------------------------|-----------------------------------------------------------------------|
-| 01  | Hostname automation                  | Basic inventory, NETCONF access, and first config push                |
-| 02  | Config backup and controlled restore | State capture, lab rebuilds, and controlled config replacement        |
-| 03  | Controlled OSPF to ISIS migration    | Staged rendering, explicit protocol removal, and idempotent migration |
-| 04  | Full SP L3VPN deployment             | Full underlay + overlay + service automation                          |
+| Lab | Focus                                  | What it shows                                                                 |
+|-----|----------------------------------------|-------------------------------------------------------------------------------|
+| 01  | Hostname automation                    | Basic inventory, NETCONF access, and first config push                        |
+| 02  | Config backup and controlled restore   | State capture, lab rebuilds, and controlled config replacement                |
+| 03  | Controlled OSPF to ISIS migration      | Staged rendering, explicit protocol removal, and idempotent migration         |
+| 04  | Full SP L3VPN deployment               | Full underlay + overlay + service automation                                  |
+| 05  | Policy-driven BGP with drift detection | Intent-based policy control, pre-deployment diffing, and safe deployment      |
 
 Start at Lab 01 if you are new to this.  
-Jump to Lab 04 if you just want the full build.
-
-Each lab contains its own README with exact steps and expected results.
+Jump to Lab 04 if you want the full service deployment.  
+Jump to Lab 05 if you want the most operations-focused workflow in the repo.
 
 ---
 
@@ -188,17 +188,27 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 3. Launch a lab (for example: `vMX` or `isis_multi_area`)  
 4. Use the provided IP/port details in your Ansible inventory  
 
+## Latest Lab
+
+### Lab 05 – Policy-Driven BGP with Drift Detection
+
+Lab 05 extends the series from service deployment into **policy-driven network behavior**.
+
+It demonstrates:
+
+- multi-AS BGP policy control across direct and transit paths
+- render → collect → compare workflow before deployment
+- safe policy deployment onto existing BGP topology
+- CLI validation of routing outcomes after change
+- post-deployment convergence checking for Lab 05-managed configuration
+
+This is the first lab in the series focused not just on generating configuration, but on **controlling and verifying routing behavior safely**.
+
 ## Future Labs
 
 This repository is designed as an evolving series.
 
 Planned extensions include:
-
-### Lab 05 – BGP Multi-AS Design
-- Inter-AS routing architecture
-- Policy boundaries and route control
-- eBGP session design across domains
-- Controlled multi-AS deployment workflow
 
 ### Lab 06 – BGP-Based Transport Modeling
 - Classful / segmented transport design

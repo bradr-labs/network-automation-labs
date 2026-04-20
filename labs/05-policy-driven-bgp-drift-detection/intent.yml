@@ -1,0 +1,487 @@
+# labs/05-policy-driven-bgp-drift-detection/intent.yml
+
+lab:
+  id: 5
+  slug: 05-policy-driven-bgp-drift-detection
+  name: Policy-Driven BGP with Drift Detection
+  description: >
+    Lab 05 uses the existing 3-AS Juniper vLabs topology to demonstrate
+    policy-driven eBGP design, model-driven rendering, and pre-deployment
+    drift detection. Multiple inter-AS paths exist between AS65222 and
+    AS65444, including direct edge adjacencies and a transit path through
+    AS65333. Policy is used to control route advertisement and influence
+    preferred path selection.
+
+routing_intent:
+  strategy: prefer_transit_for_selected_remote_prefixes
+  design_goal: >
+    Multiple valid eBGP paths exist. The lab does not remove that complexity;
+    it controls it. For selected remote prefixes, policy should prefer
+    transit-learned paths via AS65333 while retaining direct edge paths as
+    valid alternates.
+  managed_sections:
+    - protocols bgp
+    - policy-options
+    - routing-options
+
+  drift_policy:
+    compare_rendered_to_device: true
+    managed_scope_only: true
+    report_only_initially: true
+    fail_on_drift: false
+
+autonomous_systems:
+  "65222":
+    role: edge_domain
+    description: left-side AS with one internal router and two border routers
+    routers:
+      - vMX1
+      - vMX2
+      - vMX3
+    internal_prefix_sources:
+      - vMX1
+    border_routers:
+      - vMX2
+      - vMX3
+
+  "65333":
+    role: transit_domain
+    description: single-router transit AS and central policy control point
+    routers:
+      - vMX4
+    border_routers:
+      - vMX4
+    transit_enabled: true
+
+  "65444":
+    role: edge_domain
+    description: right-side AS with two externally connected routers
+    routers:
+      - vMX5
+      - vMX6
+    internal_prefix_sources:
+      - vMX6
+    border_routers:
+      - vMX5
+      - vMX6
+
+routers:
+  vMX1:
+    inventory_host: r1
+    asn: 64522
+    role: internal
+    router_id: 10.100.100.1
+    bgp:
+      enabled: false
+
+  vMX2:
+    inventory_host: r2
+    asn: 64522
+    role: border
+    router_id: 10.100.100.2
+    bgp:
+      enabled: true
+        - TO-AS65333
+        - TO-AS65444-DIRECT
+
+  vMX3:
+    inventory_host: r3
+    asn: 65222
+    role: border
+    router_id: 10.100.100.3
+    bgp:
+      enabled: true
+      groups:
+        - TO-AS65333
+        - TO-AS65444-DIRECT
+
+  vMX4:
+    inventory_host: r4
+    asn: 65333
+    role: transit
+    router_id: 10.100.100.4
+    bgp:
+      enabled: true
+      groups:
+        - TO-AS65222
+        - TO-AS65444
+
+  vMX5:
+    inventory_host: r5
+    asn: 65444
+    role: border
+    router_id: 10.100.100.5
+    advertised_prefixes: []
+    bgp:
+      enabled: true
+      groups:
+        - TO-AS65222-DIRECT
+
+  vMX6:
+    inventory_host: r6
+    asn: 65444
+    role: border_internal
+    router_id: 10.100.100.6
+    advertised_prefixes:
+      - 10.100.56.0/24
+    bgp:
+      enabled: true
+      groups:
+        - TO-AS65333
+
+prefix_lists:
+  PL-AS65222-LOOPBACKS:
+    - 10.100.100.1/32
+    - 10.100.100.2/32
+    - 10.100.100.3/32
+
+  PL-AS65222-INTERNAL:
+    - 10.100.12.0/24
+
+  PL-AS65333-LOOPBACKS:
+    - 10.100.100.4/32
+
+  PL-AS65444-LOOPBACKS:
+    - 10.100.100.5/32
+    - 10.100.100.6/32
+
+  PL-AS65444-INTERNAL:
+    - 10.100.56.0/24
+
+policy_definitions:
+  import_policies:
+    IMPORT-FROM-TRANSIT-PREFERRED:
+      description: >
+        Prefer selected remote prefixes when learned through transit AS65333.
+      local_pref: 250
+      allowed_prefix_lists:
+        - PL-AS65444-LOOPBACKS
+        - PL-AS65444-INTERNAL
+      default_action: reject
+
+    IMPORT-FROM-DIRECT-EDGE-BACKUP:
+      description: >
+        Accept selected remote prefixes over direct edge adjacencies, but at a
+        lower preference than transit-learned paths.
+      local_pref: 175
+      allowed_prefix_lists:
+        - PL-AS65444-LOOPBACKS
+        - PL-AS65444-INTERNAL
+      default_action: reject
+
+    IMPORT-INTO-TRANSIT-FROM-AS65222:
+      description: Routes accepted by transit AS from AS65222
+      allowed_prefix_lists:
+        - PL-AS65222-LOOPBACKS
+        - PL-AS65222-INTERNAL
+      default_action: reject
+
+    IMPORT-INTO-TRANSIT-FROM-AS65444:
+      description: Routes accepted by transit AS from AS65444
+      allowed_prefix_lists:
+        - PL-AS65444-LOOPBACKS
+        - PL-AS65444-INTERNAL
+      default_action: reject
+
+    IMPORT-FROM-AS65222-DIRECT:
+      description: >
+        Accept approved AS65222 routes on AS65444 direct edge sessions.
+      local_pref: 175
+      allowed_prefix_lists:
+        - PL-AS65222-LOOPBACKS
+        - PL-AS65222-INTERNAL
+      default_action: reject
+
+    IMPORT-FROM-TRANSIT-INTO-AS65444:
+      description: >
+        Prefer selected AS65222 routes when learned inside AS65444 via transit.
+      local_pref: 250
+      allowed_prefix_lists:
+        - PL-AS65222-LOOPBACKS
+        - PL-AS65222-INTERNAL
+      default_action: reject
+
+  export_policies:
+    EXPORT-AS65222:
+      description: Advertise approved AS65222 routes only
+      allowed_prefix_lists:
+        - PL-AS65222-LOOPBACKS
+        - PL-AS65222-INTERNAL
+      default_action: reject
+
+    EXPORT-AS65444:
+      description: Advertise approved AS65444 routes only
+      allowed_prefix_lists:
+        - PL-AS65444-LOOPBACKS
+        - PL-AS65444-INTERNAL
+      default_action: reject
+
+    EXPORT-AS65333-TRANSIT:
+      description: >
+        Re-advertise only approved routes between attached edge domains.
+      allow_transit_between:
+        - 65222
+        - 65444
+      allowed_prefix_lists:
+        - PL-AS65222-LOOPBACKS
+        - PL-AS65222-INTERNAL
+        - PL-AS65444-LOOPBACKS
+        - PL-AS65444-INTERNAL
+      default_action: reject
+
+path_policy:
+  preferred_remote_prefix_sets:
+    - PL-AS65444-LOOPBACKS
+    - PL-AS65444-INTERNAL
+
+  preferred_path_type_for_as65222_to_as65444: transit
+  backup_path_type_for_as65222_to_as65444: direct
+
+  preferred_remote_prefix_sets_return:
+    - PL-AS65222-LOOPBACKS
+    - PL-AS65222-INTERNAL
+
+  preferred_path_type_for_as65444_to_as65222: transit
+  backup_path_type_for_as65444_to_as65222: direct
+
+bgp_sessions:
+
+  #
+  # AS65222 → AS65333 (Transit)
+  #
+  - name: vmx2-to-as64533
+    group: to-AS64533
+    local_router: vMX2
+    remote_router: vMX4
+    local_as: 64522
+    remote_as: 64533
+    session_type: ebgp
+    neighbor_role: transit
+    transport:
+      neighbor_address: 10.100.24.2
+      local_interface_ip: 10.100.24.1
+    import_policy:
+      - IMPORT-FROM-TRANSIT-PREFERRED
+    export_policy:
+      - EXPORT-AS65222
+    preference_goal: preferred
+
+  - name: vmx3-to-as64533
+    group: to-AS64533
+    local_router: vMX3
+    remote_router: vMX4
+    local_as: 64522
+    remote_as: 64533
+    session_type: ebgp
+    neighbor_role: transit
+    transport:
+      neighbor_address: 10.100.34.2
+      local_interface_ip: 10.100.34.1
+    import_policy:
+      - IMPORT-FROM-TRANSIT-PREFERRED
+    export_policy:
+      - EXPORT-AS65222
+    preference_goal: preferred
+
+
+  #
+  # AS65222 → AS65444 (Direct edge)
+  #
+  - name: vmx2-to-as64544
+    group: to-AS64544
+    local_router: vMX2
+    remote_router: vMX5
+    local_as: 64522
+    remote_as: 64544
+    session_type: ebgp
+    neighbor_role: direct_edge
+    transport:
+      neighbor_address: 10.100.25.2
+      local_interface_ip: 10.100.25.1
+    import_policy:
+      - IMPORT-FROM-DIRECT-EDGE-BACKUP
+    export_policy:
+      - EXPORT-AS65222
+    preference_goal: backup
+
+  - name: vmx3-to-as64544
+    group: to-AS64544
+    local_router: vMX3
+    remote_router: vMX5
+    local_as: 64522
+    remote_as: 64544
+    session_type: ebgp
+    neighbor_role: direct_edge
+    transport:
+      neighbor_address: 10.100.35.2
+      local_interface_ip: 10.100.35.1
+    import_policy:
+      - IMPORT-FROM-DIRECT-EDGE-BACKUP
+    export_policy:
+      - EXPORT-AS65222
+    preference_goal: backup
+
+
+  #
+  # AS65333 → AS65444 (Transit side)
+  #
+  - name: vmx4-to-as64544-vmx5
+    group: to-AS64544
+    local_router: vMX4
+    remote_router: vMX5
+    local_as: 64533
+    remote_as: 64544
+    session_type: ebgp
+    neighbor_role: edge
+    transport:
+      neighbor_address: 10.100.45.2
+      local_interface_ip: 10.100.45.1
+    import_policy:
+      - IMPORT-INTO-TRANSIT-FROM-AS65444
+    export_policy:
+      - EXPORT-AS65333-TRANSIT
+
+  - name: vmx4-to-as64544-vmx6
+    group: to-AS64544
+    local_router: vMX4
+    remote_router: vMX6
+    local_as: 64533
+    remote_as: 64544
+    session_type: ebgp
+    neighbor_role: edge
+    transport:
+      neighbor_address: 10.100.46.2
+      local_interface_ip: 10.100.46.1
+    import_policy:
+      - IMPORT-INTO-TRANSIT-FROM-AS65444
+    export_policy:
+      - EXPORT-AS65333-TRANSIT
+
+  - name: vmx4-to-as64522-vmx2
+    group: to-AS64522
+    local_router: vMX4
+    remote_router: vMX2
+    local_as: 64533
+    remote_as: 64522
+    session_type: ebgp
+    neighbor_role: edge
+    transport:
+      neighbor_address: 10.100.24.1
+      local_interface_ip: 10.100.24.2
+    import_policy:
+      - IMPORT-INTO-TRANSIT-FROM-AS65222
+    export_policy:
+      - EXPORT-AS65333-TRANSIT
+
+  - name: vmx4-to-as64522-vmx3
+    group: to-AS64522
+    local_router: vMX4
+    remote_router: vMX3
+    local_as: 64533
+    remote_as: 64522
+    session_type: ebgp
+    neighbor_role: edge
+    transport:
+      neighbor_address: 10.100.34.1
+      local_interface_ip: 10.100.34.2
+    import_policy:
+      - IMPORT-INTO-TRANSIT-FROM-AS65222
+    export_policy:
+      - EXPORT-AS65333-TRANSIT
+
+  #
+  # AS65444 → AS65333 (Return via transit)
+  #
+  - name: vmx6-to-as64533
+    group: to-AS64533
+    local_router: vMX6
+    remote_router: vMX4
+    local_as: 64544
+    remote_as: 64533
+    session_type: ebgp
+    neighbor_role: transit
+    transport:
+      neighbor_address: 10.100.46.1
+      local_interface_ip: 10.100.46.2
+    import_policy:
+      - IMPORT-FROM-TRANSIT-INTO-AS65444
+    export_policy:
+      - EXPORT-AS65444
+    preference_goal: preferred
+
+
+  #
+  # AS65444 → AS65222 (Direct return)
+  #
+  - name: vmx5-to-as64522-vmx2
+    group: to-AS64522
+    local_router: vMX5
+    remote_router: vMX2
+    local_as: 64544
+    remote_as: 64522
+    session_type: ebgp
+    neighbor_role: direct_edge
+    transport:
+      neighbor_address: 10.100.25.1
+      local_interface_ip: 10.100.25.2
+    import_policy:
+      - IMPORT-FROM-AS65222-DIRECT
+    export_policy:
+      - EXPORT-AS65444
+
+  - name: vmx5-to-as64522-vmx3
+    group: to-AS64522
+    local_router: vMX5
+    remote_router: vMX3
+    local_as: 64544
+    remote_as: 64522
+    session_type: ebgp
+    neighbor_role: direct_edge
+    transport:
+      neighbor_address: 10.100.35.1
+      local_interface_ip: 10.100.35.2
+    import_policy:
+      - IMPORT-FROM-AS65222-DIRECT
+    export_policy:
+      - EXPORT-AS65444
+
+validation_targets:
+  bgp:
+    expected_established_sessions:
+      - vmx2-to-vmx4
+      - vmx3-to-vmx4
+      - vmx4-to-vmx2
+      - vmx4-to-vmx3
+      - vmx2-to-vmx5
+      - vmx3-to-vmx5
+      - vmx4-to-vmx6
+      - vmx6-to-vmx4
+      - vmx5-to-vmx2
+      - vmx5-to-vmx3
+
+  routing:
+    end_to_end_checks:
+      - source_router: vMX1
+        destination_prefix: 10.100.56.0/24
+        expected_best_path_type: transit
+        acceptable_backup_path_type: direct
+
+      - source_router: vMX6
+        destination_prefix: 10.100.12.0/24
+        expected_best_path_type: transit
+        acceptable_backup_path_type: direct
+
+    selected_prefix_policy_checks:
+      - prefix_list: PL-AS65444-INTERNAL
+        from_as: 65222
+        expected_preference: transit_preferred
+
+      - prefix_list: PL-AS65222-INTERNAL
+        from_as: 65444
+        expected_preference: transit_preferred
+
+  drift_checks:
+    required_sections:
+      - protocols bgp
+      - policy-options
+      - routing-options
