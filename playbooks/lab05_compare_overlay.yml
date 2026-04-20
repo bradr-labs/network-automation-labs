@@ -1,0 +1,131 @@
+---
+- name: Compare Lab 05 policy overlay convergence
+  hosts: all
+  gather_facts: false
+
+  vars_files:
+    - ../labs/05-policy-driven-bgp-drift-detection/intent.yml
+
+  vars:
+    lab05_render_dir: "{{ playbook_dir }}/../rendered/lab05"
+    lab05_collect_dir: "{{ playbook_dir }}/../staging/lab05/collected"
+    lab05_normalized_dir: "{{ playbook_dir }}/../staging/lab05/normalized"
+    lab05_overlay_diff_dir: "{{ playbook_dir }}/../staging/lab05/diffs-overlay"
+
+  tasks:
+    - name: Resolve Lab 05 logical router for this inventory host
+      ansible.builtin.set_fact:
+        lab05_router_name: >-
+          {{
+            (
+              routers
+              | dict2items
+              | selectattr('value.inventory_host', 'equalto', inventory_hostname)
+              | map(attribute='key')
+              | first
+            ) | default('')
+          }}
+
+    - name: Skip routers not defined in Lab 05 intent
+      ansible.builtin.meta: end_host
+      when: lab05_router_name == ''
+
+    - name: Skip routers without BGP enabled for Lab 05
+      ansible.builtin.meta: end_host
+      when: not (routers[lab05_router_name].bgp.enabled | default(false))
+
+    - name: Ensure normalized output directory exists
+      ansible.builtin.file:
+        path: "{{ lab05_normalized_dir }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Ensure overlay diff output directory exists
+      ansible.builtin.file:
+        path: "{{ lab05_overlay_diff_dir }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Check rendered config exists
+      ansible.builtin.stat:
+        path: "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+      register: lab05_render_stat
+      delegate_to: localhost
+
+    - name: Check collected config exists
+      ansible.builtin.stat:
+        path: "{{ lab05_collect_dir }}/{{ lab05_router_name }}.set"
+      register: lab05_collect_stat
+      delegate_to: localhost
+
+    - name: Fail if rendered config is missing
+      ansible.builtin.fail:
+        msg: "Rendered config missing for {{ lab05_router_name }}"
+      when: not lab05_render_stat.stat.exists
+
+    - name: Fail if collected config is missing
+      ansible.builtin.fail:
+        msg: "Collected config missing for {{ lab05_router_name }}"
+      when: not lab05_collect_stat.stat.exists
+
+    - name: Normalize rendered overlay lines
+      ansible.builtin.shell: >
+        grep -E '^(set policy-options |set protocols bgp group .+ (import|export) )'
+        "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+        | sed '/^$/d'
+        > "{{ lab05_normalized_dir }}/{{ lab05_router_name }}.rendered.overlay"
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Normalize collected overlay lines
+      ansible.builtin.shell: >
+        grep -E '^(set policy-options |set protocols bgp group .+ (import|export) )'
+        "{{ lab05_collect_dir }}/{{ lab05_router_name }}.set"
+        | sed '/^$/d'
+        > "{{ lab05_normalized_dir }}/{{ lab05_router_name }}.collected.overlay"
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Run unified diff on normalized overlay
+      ansible.builtin.command:
+        cmd: >-
+          diff -u
+          {{ lab05_normalized_dir }}/{{ lab05_router_name }}.collected.overlay
+          {{ lab05_normalized_dir }}/{{ lab05_router_name }}.rendered.overlay
+      register: lab05_overlay_diff_cmd
+      delegate_to: localhost
+      changed_when: lab05_overlay_diff_cmd.rc == 1
+      failed_when: lab05_overlay_diff_cmd.rc not in [0, 1]
+
+    - name: Write overlay diff report
+      ansible.builtin.copy:
+        dest: "{{ lab05_overlay_diff_dir }}/{{ lab05_router_name }}.overlay.diff"
+        mode: "0644"
+        content: |
+          ## Lab 05 overlay convergence diff for {{ lab05_router_name }}
+          ## Inventory host: {{ inventory_hostname }}
+          ## Return code: {{ lab05_overlay_diff_cmd.rc }}
+          ## Meaning:
+          ##   0 = overlay matches intended state
+          ##   1 = overlay drift remains
+
+          {{ lab05_overlay_diff_cmd.stdout | default('') }}
+      delegate_to: localhost
+
+    - name: Show overlay diff status
+      ansible.builtin.debug:
+        msg: >-
+          {{
+            'Overlay matches intended state for ' ~ lab05_router_name
+            if lab05_overlay_diff_cmd.rc == 0
+            else 'Overlay differences remain for ' ~ lab05_router_name ~
+                 '; see ' ~ lab05_overlay_diff_dir ~ '/' ~ lab05_router_name ~ '.overlay.diff'
+          }}

@@ -1,0 +1,49 @@
+---
+- name: Render Lab 05 policy overlay config
+  hosts: all
+  gather_facts: false
+
+  vars_files:
+    - ../labs/05-policy-driven-bgp-drift-detection/intent.yml
+
+  vars:
+    lab05_render_dir: "{{ playbook_dir }}/../rendered/lab05"
+
+  tasks:
+    - name: Resolve Lab 05 logical router for this inventory host
+      ansible.builtin.set_fact:
+        lab05_router_name: >-
+          {{
+            (
+              routers
+              | dict2items
+              | selectattr('value.inventory_host', 'equalto', inventory_hostname)
+              | map(attribute='key')
+              | first
+            ) | default('')
+          }}
+
+    - name: Skip routers not defined in Lab 05 intent
+      ansible.builtin.meta: end_host
+      when: lab05_router_name == ''
+
+    - name: Skip routers without BGP enabled for Lab 05
+      ansible.builtin.meta: end_host
+      when: not (routers[lab05_router_name].bgp.enabled | default(false))
+
+    - name: Ensure Lab 05 render output directory exists
+      ansible.builtin.file:
+        path: "{{ lab05_render_dir }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Render Lab 05 policy overlay config
+      ansible.builtin.template:
+        src: ../templates/lab05_bgp_policy_set.j2
+        dest: "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+        mode: "0644"
+      delegate_to: localhost
+      vars:
+        lab05_router_name: "{{ lab05_router_name }}"

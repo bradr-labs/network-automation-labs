@@ -1,0 +1,90 @@
+---
+- name: Deploy Lab 05 policy overlay config
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars_files:
+    - ../labs/05-policy-driven-bgp-drift-detection/intent.yml
+
+  vars:
+    junos_user: "jcluser"
+    lab05_render_dir: "{{ playbook_dir }}/../rendered/lab05"
+    lab05_commit_comment: "Lab 05 policy overlay deployment"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
+
+  tasks:
+    - name: Resolve Lab 05 logical router for this inventory host
+      ansible.builtin.set_fact:
+        lab05_router_name: >-
+          {{
+            (
+              routers
+              | dict2items
+              | selectattr('value.inventory_host', 'equalto', inventory_hostname)
+              | map(attribute='key')
+              | first
+            ) | default('')
+          }}
+
+    - name: Skip routers not defined in Lab 05 intent
+      ansible.builtin.meta: end_host
+      when: lab05_router_name == ''
+
+    - name: Skip routers without BGP enabled for Lab 05
+      ansible.builtin.meta: end_host
+      when: not (routers[lab05_router_name].bgp.enabled | default(false))
+
+    - name: Check rendered config exists
+      ansible.builtin.stat:
+        path: "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+      register: lab05_render_stat
+      delegate_to: localhost
+
+    - name: Fail if rendered config is missing
+      ansible.builtin.fail:
+        msg: "Rendered config missing for {{ lab05_router_name }} at {{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+      when: not lab05_render_stat.stat.exists
+
+    - name: Load Lab 05 rendered policy config and run commit check
+      no_log: true
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
+        src: "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+        load: set
+        check: true
+        comment: "{{ lab05_commit_comment }}"
+      register: lab05_check_result
+
+    - name: Show commit-check result
+      ansible.builtin.debug:
+        msg: >-
+          Commit check passed for {{ lab05_router_name }}.
+          changed={{ lab05_check_result.changed | default(false) }}
+
+    - name: Commit Lab 05 rendered policy config
+      no_log: true
+      juniper.device.config:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
+        src: "{{ lab05_render_dir }}/{{ lab05_router_name }}.set"
+        load: set
+        comment: "{{ lab05_commit_comment }}"
+      register: lab05_deploy_result
+
+    - name: Show deployment result
+      ansible.builtin.debug:
+        msg: >-
+          Deployment completed for {{ lab05_router_name }}.
+          changed={{ lab05_deploy_result.changed | default(false) }}

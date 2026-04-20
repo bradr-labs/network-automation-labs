@@ -1,0 +1,101 @@
+---
+- name: Collect Lab 05 managed config from live routers
+  hosts: junos
+  gather_facts: false
+  connection: local
+
+  vars_files:
+    - ../labs/05-policy-driven-bgp-drift-detection/intent.yml
+
+  vars:
+    junos_user: "jcluser"
+    lab05_collect_dir: "{{ playbook_dir }}/../staging/lab05/collected"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
+
+  tasks:
+    - name: Resolve Lab 05 logical router for this inventory host
+      ansible.builtin.set_fact:
+        lab05_router_name: >-
+          {{
+            (
+              routers
+              | dict2items
+              | selectattr('value.inventory_host', 'equalto', inventory_hostname)
+              | map(attribute='key')
+              | first
+            ) | default('')
+          }}
+
+    - name: Skip routers not defined in Lab 05 intent
+      ansible.builtin.meta: end_host
+      when: lab05_router_name == ''
+
+    - name: Skip routers without BGP enabled for Lab 05
+      ansible.builtin.meta: end_host
+      when: not (routers[lab05_router_name].bgp.enabled | default(false))
+
+    - name: Ensure local collect directory exists
+      ansible.builtin.file:
+        path: "{{ lab05_collect_dir }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Collect protocols bgp
+      no_log: true
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
+        commands:
+          - "show configuration protocols bgp | display set"
+      register: lab05_bgp
+
+    - name: Collect policy-options
+      no_log: true
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
+        commands:
+          - "show configuration policy-options | display set"
+      register: lab05_policy
+
+    - name: Collect routing-options
+      no_log: true
+      juniper.device.command:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        ssh_config: "/tmp/blank_ssh_config"
+        commands:
+          - "show configuration routing-options autonomous-system | display set"
+      register: lab05_routing
+
+    - name: Save collected managed config snapshot
+      ansible.builtin.copy:
+        dest: "{{ lab05_collect_dir }}/{{ lab05_router_name }}.set"
+        mode: "0644"
+        content: |
+          ## Lab 05 collected managed config for {{ lab05_router_name }}
+          ## Inventory host: {{ inventory_hostname }}
+
+          ## protocols bgp
+          {{ lab05_bgp.stdout | default('') | trim }}
+
+          ## policy-options
+          {{ lab05_policy.stdout | default('') | trim }}
+
+          ## routing-options
+          {{ lab05_routing.stdout | default('') | trim }}
+      delegate_to: localhost

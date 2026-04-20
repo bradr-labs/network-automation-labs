@@ -1,0 +1,92 @@
+{%- set router = routers[lab05_router_name] -%}
+{%- set local_sessions = bgp_sessions
+    | selectattr('local_router', 'equalto', lab05_router_name)
+    | list -%}
+    
+{%- set import_policy_names = [] -%}
+{%- set export_policy_names = [] -%}
+{%- for session in local_sessions -%}
+  {%- for pol in session.import_policy | default([]) -%}
+    {%- if pol not in import_policy_names -%}
+      {%- set _ = import_policy_names.append(pol) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- for pol in session.export_policy | default([]) -%}
+    {%- if pol not in export_policy_names -%}
+      {%- set _ = export_policy_names.append(pol) -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+
+{%- set referenced_prefix_lists = [] -%}
+{%- for pol_name in import_policy_names -%}
+  {%- set pol = policy_definitions.import_policies[pol_name] -%}
+  {%- for pl in pol.allowed_prefix_lists | default([]) -%}
+    {%- if pl not in referenced_prefix_lists -%}
+      {%- set _ = referenced_prefix_lists.append(pl) -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+
+{%- for pol_name in export_policy_names -%}
+  {%- set pol = policy_definitions.export_policies[pol_name] -%}
+  {%- for pl in pol.allowed_prefix_lists | default([]) -%}
+    {%- if pl not in referenced_prefix_lists -%}
+      {%- set _ = referenced_prefix_lists.append(pl) -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor %}
+
+{# ------------------------------------------------------------ #}
+{# policy-options: prefix-lists                                 #}
+{# ------------------------------------------------------------ #}
+{% for pl_name in referenced_prefix_lists | sort %}
+{%   for prefix in prefix_lists[pl_name] %}
+set policy-options prefix-list {{ pl_name }} {{ prefix }}
+{%   endfor %}
+{% endfor %}
+
+{# ------------------------------------------------------------ #}
+{# policy-options: import policies                              #}
+{# ------------------------------------------------------------ #}
+{% for pol_name in import_policy_names | sort %}
+{%   set pol = policy_definitions.import_policies[pol_name] %}
+{%   set allowed = pol.allowed_prefix_lists | default([]) %}
+{%   for pl_name in allowed %}
+set policy-options policy-statement {{ pol_name }} term ALLOW-{{ loop.index }} from prefix-list {{ pl_name }}
+{%     if pol.local_pref is defined %}
+set policy-options policy-statement {{ pol_name }} term ALLOW-{{ loop.index }} then local-preference {{ pol.local_pref }}
+{%     endif %}
+set policy-options policy-statement {{ pol_name }} term ALLOW-{{ loop.index }} then accept
+{%   endfor %}
+set policy-options policy-statement {{ pol_name }} term REJECT-REST then reject
+{% endfor %}
+
+{# ------------------------------------------------------------ #}
+{# policy-options: export policies                              #}
+{# ------------------------------------------------------------ #}
+{% for pol_name in export_policy_names | sort %}
+{%   set pol = policy_definitions.export_policies[pol_name] %}
+{%   set allowed = pol.allowed_prefix_lists | default([]) %}
+{%   for pl_name in allowed %}
+set policy-options policy-statement {{ pol_name }} term ALLOW-{{ loop.index }} from prefix-list {{ pl_name }}
+set policy-options policy-statement {{ pol_name }} term ALLOW-{{ loop.index }} then accept
+{%   endfor %}
+set policy-options policy-statement {{ pol_name }} term REJECT-REST then reject
+{% endfor %}
+
+{# ------------------------------------------------------------ #}
+{# protocols bgp: attach policy to existing groups only         #}
+{# ------------------------------------------------------------ #}
+{% set rendered_groups = [] %}
+{% for session in local_sessions %}
+{%   if session.group not in rendered_groups %}
+{%     set _ = rendered_groups.append(session.group) %}
+{%     for pol_name in session.import_policy | default([]) %}
+set protocols bgp group {{ session.group }} import {{ pol_name }}
+{%     endfor %}
+{%     for pol_name in session.export_policy | default([]) %}
+set protocols bgp group {{ session.group }} export {{ pol_name }}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
