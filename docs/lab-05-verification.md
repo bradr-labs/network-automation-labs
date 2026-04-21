@@ -44,7 +44,7 @@ inet.0: 18 destinations, 30 routes (18 active, 0 holddown, 0 hidden)
 
 ## 2. Verify Both Paths Are Received on AS64522
 Direct path (AS64544 → AS64522)
-`show route receive-protocol bgp 10.100.25.2 10.100.56.0/24 detail`
+- `show route receive-protocol bgp 10.100.25.2 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -58,7 +58,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 Transit path (AS64544 → AS64533 → AS64522)
-`show route receive-protocol bgp 10.100.24.2 10.100.56.0/24 detail`
+- `show route receive-protocol bgp 10.100.24.2 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -72,8 +72,8 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 Loopback validation (optional but recommended)
-`show route receive-protocol bgp 10.100.25.2 10.100.100.6/32 detail`
-`show route receive-protocol bgp 10.100.24.2 10.100.100.6/32 detail`
+- `show route receive-protocol bgp 10.100.25.2 10.100.100.6/32 detail`
+- `show route receive-protocol bgp 10.100.24.2 10.100.100.6/32 detail`
 
 Output:
 ```bash
@@ -95,7 +95,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
 ```
 
 ## 3. Verify Best Path Selection
-`show route 10.100.56.0/24 detail`
+- `show route 10.100.56.0/24 detail`
 
 Output:
 ```bash
@@ -166,7 +166,7 @@ inet.0: 19 destinations, 25 routes (19 active, 0 holddown, 0 hidden)
                 Thread: junos-main 
 ```
 
-`show route 10.100.100.6/32 detail`
+- `show route 10.100.100.6/32 detail`
 Output:
 ```bash
 jcluser@vMX2> show route 10.100.100.6/32 detail 
@@ -251,27 +251,21 @@ Verification confirms that:
 
 Key attributes:
 
-Path Type	Source	Local Preference	Expected Role
-Transit	    AS64533	250	                Preferred
-Direct	    AS64544	175	                Backup
+| Path Type | Source  | Local Preference | Role      |
+|-----------|---------|------------------|-----------|
+| Transit   | AS64533 | **250**          | Preferred |
+| Direct    | AS64544 | **175**          | Backup    |
 
 ## 5. Conclusion
 
 Verification confirms that:
 
-policy correctly influences BGP path selection
-transit path is preferred over direct path
-direct path remains available as fallback
-export policies correctly control prefix advertisement
+- policy correctly influences BGP path selection
+- transit path is preferred over direct path
+- direct path remains available as fallback
+- export policies correctly control prefix advertisement
 
-This validates the Lab 05 policy-driven design.
-
-
----
-
-# 🧠 Why this structure works
-
-This is not just “some outputs” — it tells a story:
+This validates the Lab 05 policy-driven design. The storyline is:
 
 1. **Are prefixes being advertised?**
 2. **Are they received on both paths?**

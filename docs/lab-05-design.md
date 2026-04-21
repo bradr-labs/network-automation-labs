@@ -42,18 +42,18 @@ AS65333 remains the primary **policy enforcement point**, but it is not the only
 The lab demonstrates the following capabilities:
 
 1. Model-Driven Configuration
-BGP neighbors generated from topology data
-Policy generated from structured intent (not hardcoded CLI)
-Reuse of rendering patterns from Labs 01–04
+   - BGP neighbors generated from topology data
+   - Policy generated from structured intent (not hardcoded CLI)
+   - Reuse of rendering patterns from Labs 01–04
 2. Policy-Controlled Routing
-Explicit import/export behavior
-No default “permit all” routing
-Prefix advertisement restricted by policy objects
+   - Explicit import/export behavior
+   - No default “permit all” routing
+   - Prefix advertisement restricted by policy objects
 3. Drift Detection Before Deployment
-Uses collected live configuration as the baseline for comparison
+   - Uses collected live configuration as the baseline for comparison
 4. Safe Deployment Workflow
-Render → Compare → Review → Deploy → Validate
-Deployment gated by drift status
+   - Render → Compare → Review → Deploy → Validate
+   - Deployment gated by drift status
 
 ## 4. Policy Design Principles
 
@@ -144,9 +144,9 @@ These changes can affect best-path selection or route visibility, making drift d
 
 Automation in this lab controls only specific parts of the device configuration:
 
-protocols bgp
-policy-options
-routing-options autonomous-system
+- protocols bgp
+- policy-options
+- routing-options autonomous-system
 
 All drift detection and comparisons are scoped to these sections.
 
@@ -160,14 +160,14 @@ Drift = Any difference between intended rendered configuration and actual device
 
 Drift includes:
 
-manual config changes on devices
-missing policy statements
-mismatched BGP neighbor definitions
+- manual config changes on devices
+- missing policy statements
+- mismatched BGP neighbor definitions
 
 Drift excludes:
 
-unrelated system config
-interface-level config outside BGP scope
+- unrelated system config
+- interface-level config outside BGP scope
 
 ## 7. Workflow Model
 
@@ -325,18 +325,19 @@ Scenario 1 — Controlled Prefix Advertisement
 
 Add a new internal prefix to an edge AS and verify:
 
-it is rendered correctly
-it is advertised only where allowed
+- it is rendered correctly
+- it is advertised only where allowed
+
 Scenario 2 — Policy-Based Path Preference
 
-Modify preference toward one path via transit AS65333 and validate route selection.
+- Modify preference toward one path via transit AS65333 and validate route selection.
 
 Scenario 3 — Drift Detection
 
 Introduce a manual config change on a router and verify:
 
-drift is detected before deployment
-report highlights differences clearly
+- drift is detected before deployment
+- report highlights differences clearly
 
 ## 11. Key Design Insight
 
@@ -346,16 +347,16 @@ The transit AS (65333) is not just a router — it is the policy control plane.
 
 Everything in the lab should reinforce that:
 
-policy is enforced there
-drift is most critical there
-correctness is validated through it
+- policy is enforced there
+- drift is most critical there
+- correctness is validated through it
 
 ## 12. Position in the Lab Series
 
 Lab 05 represents a transition:
 
-Labs 01–04: configuration generation and deployment mechanics
-Lab 05: intent, policy, and safe change validation
+- Labs 01–04: configuration generation and deployment mechanics
+- Lab 05: intent, policy, and safe change validation
 
 It introduces the idea that:
 

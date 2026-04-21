@@ -32,7 +32,9 @@ This demonstrates controlled routing behavior driven entirely by policy.
 ## Topology Context
 
 This lab reuses the existing BGP - Multi-AS topology from Juniper vLabs.
-https://jlabs.juniper.net/vlabs/portal/bgp-multi-as/index.page
+
+See the topology reference here:
+[Juniper vLabs – BGP Multi-AS topology](https://jlabs.juniper.net/vlabs/portal/bgp-multi-as/index.page)
 
 
 ### Roles
