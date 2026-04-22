@@ -14,7 +14,7 @@ Rather than treating devices as individual configuration targets, this project b
 - staged deployment workflows  
 - safe, repeatable change execution  
 
-The labs progress from simple configuration tasks to a full **Service Provider L3VPN deployment** built using a layered model and then into **policy-driven routing control with drift-aware operations**.
+The labs progress from simple configuration tasks to a full **Service Provider L3VPN deployment** built using a layered model and then into **policy-driven routing control with drift-aware operations and transport-aware validation**.
 
 The goal is simple:
 build something that looks closer to real operations than “run this playbook and hope”.
@@ -28,17 +28,20 @@ This is not a collection of random playbooks.
 It is a structured progression showing how to move from:
 - simple device changes  
 to  
-- controlled service deployment  
+- controlled service deployment
+to  
+- validated forwarding behavior  
 
 It demonstrates:
 
-- **model-driven configuration rendering** (data → templates → device configs)  
-- **separation of underlay and overlay** responsibilities  
-- **staged deployment workflows** (render → deploy)  
-- **safe configuration strategies** (`merge` and `set`, no destructive overrides)  
-- **idempotent automation design**  
-- **failure isolation and recovery strategy**
-- **drift-aware operational workflow** (render → collect → compare → deploy → verify)  
+- model-driven configuration rendering (data → templates → device configs)  
+- separation of underlay and overlay responsibilities  
+- staged deployment workflows (render → deploy)  
+- safe configuration strategies (`merge` and `set`, no destructive overrides)  
+- idempotent automation design  
+- failure isolation and recovery strategy
+- drift-aware operational workflow (render → collect → compare → deploy → verify) 
+- transport-aware validation of service forwarding behavior 
 
 ## Why this exists
 
@@ -70,16 +73,18 @@ Each lab builds on the previous one and introduces a new layer of operational th
 | 03  | Controlled OSPF to ISIS migration      | Staged rendering, explicit protocol removal, and idempotent migration         |
 | 04  | Full SP L3VPN deployment               | Full underlay + overlay + service automation                                  |
 | 05  | Policy-driven BGP with drift detection | Intent-based policy control, pre-deployment diffing, and safe deployment      |
+| 06  | Transport-aware service validation     | Service → transport mapping and forwarding validation under change            |
 
 Start at Lab 01 if you are new to this.  
 Jump to Lab 04 if you want the full service deployment.  
-Jump to Lab 05 if you want the most operations-focused workflow in the repo.
+Jump to Lab 05 if you want policy control and drift-aware operations.  
+Jump to Lab 06 if you want to understand how services are actually forwarded in the network.
 
 ---
 
-## What gets built (final lab)
+## What gets built (core deployment)
 
-The final lab automates a full service provider L3VPN stack:
+Lab 04 remains the central build in this series and automates a full service provider L3VPN stack:
 
 - ISIS multi-area underlay  
 - MPLS + RSVP  
@@ -93,7 +98,24 @@ End-to-end validation is included (CE to CE reachability confirmed).
 
 ---
 
-## Deployment is staged
+## What comes after deployment
+
+Labs 05 and 06 build on this foundation by focusing on **how the network behaves after it is built**:
+
+- Lab 05 introduces policy control and drift-aware operations  
+- Lab 06 validates how services are actually forwarded across transport classes  
+
+Together, these extend the project from:
+
+- building networks  
+
+into:
+
+- controlling and verifying real operational behavior
+
+---
+
+## Core Deployment (Lab04) is staged
 
 Changes are applied in controlled phases:
 
@@ -121,6 +143,9 @@ Instead it uses:
 This preserves access and reduces risk during deployment.
 
 ## How to run (fast path)
+
+See the topology reference for this specific core deployment Lab04 here:
+[Juniper vLabs – IS-IS - Multi-level/area](https://jlabs.juniper.net/vlabs/portal/is-is-multi-level-area/)
 
 ### 1. Full deployment (Lab 04)
 
@@ -188,11 +213,11 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 3. Launch a lab (for example: `vMX` or `isis_multi_area`)  
 4. Use the provided IP/port details in your Ansible inventory  
 
-## Latest Lab
+## Recent Lab
 
 ### Lab 05 – Policy-Driven BGP with Drift Detection
 
-Lab 05 extends the series from service deployment into **policy-driven network behavior**.
+Lab 05 extends the series from service deployment into policy-driven network behavior.
 
 It demonstrates:
 
@@ -204,19 +229,53 @@ It demonstrates:
 
 This is the first lab in the series focused not just on generating configuration, but on **controlling and verifying routing behavior safely**.
 
+## Latest Lab
+
+### Lab 06 – Transport-Aware Service Reachability
+
+Lab 06 extends the series from policy control into **transport-aware service validation**.
+
+It demonstrates:
+
+- how customer-facing services are resolved over specific transport classes (gold / bronze)
+- how service intent (color) drives transport selection at the PE
+- how transport paths exist independently of the service plane
+- end-to-end validation of service → transport dependency (CE → PE → boundary)
+- controlled failure testing by removing service classification at the source
+
+The lab introduces a validation workflow that proves not only that a service is reachable, but **how it is forwarded and why**.
+
+It also shows how operators can verify these behaviors across different states (for example, with and without service classification), rather than relying on static control-plane inspection.
+
+This marks the transition from:
+
+- configuration and deployment (Labs 01–04)  
+- policy control and drift detection (Lab 05)  
+
+into:
+
+- **intent-driven forwarding validation and multi-plane observability (Lab 06)**
+
+---
+
 ## Future Labs
 
 This repository is designed as an evolving series.
 
 Planned extensions include:
 
-### Lab 06 – BGP-Based Transport Modeling
-- Classful / segmented transport design
-- Route propagation boundaries
-- Service reachability across constrained domains
-- Overlay behavior on non-uniform underlay
+### Lab 07 – Intent Validation & Failure Scenarios
+- systematic failure injection (policy, transport, classification)
+- full PASS/FAIL validation workflows
+- service vs transport fault isolation
+- validation patterns reusable in production networks
 
-These labs extend the progression from single-domain automation toward multi-domain and policy-driven network design.
+### Lab 08 – Multi-Service / Multi-Class Validation
+- validating multiple services across different transport classes
+- scaling the model beyond single-route verification
+- SLA-aware service grouping and validation
+
+These labs extend the progression toward **real-world operational validation**, where engineers must verify not only that the network works, but that it behaves as intended under change.
 
 ## Author
 

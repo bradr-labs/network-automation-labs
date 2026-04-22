@@ -1,0 +1,168 @@
+---
+- name: Verify Lab 06 transport-aware service resolution
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    junos_user: "jcluser"
+
+  vars_prompt:
+    - name: DEVICE_PASSWORD
+      prompt: "Device password"
+      private: yes
+
+  vars_files:
+    - ../labs/06-transport-aware-service-reachability/verification.yml
+
+  tasks:
+    - name: Lab header
+      debug:
+        msg: "=== Lab 06: Transport-Aware Service Resolution ==="
+
+    - name: Run CE reachability and service-route checks
+      juniper.device.command:
+        host: "{{ item.host }}"
+        port: "{{ item.port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        commands:
+          - "ping {{ lab06.service.destination_ip }} source {{ lab06.service.source_ip }} count 3"
+          - "show route {{ lab06.service.destination_ip }} extensive"
+      loop: "{{ lab06.ce_checks }}"
+      loop_control:
+        label: "{{ item.device_name }}"
+      register: ce_results
+      connection: local
+
+    - name: Run PE service-resolution checks
+      juniper.device.command:
+        host: "{{ item.host }}"
+        port: "{{ item.port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        commands:
+          - "show route {{ lab06.service.destination_ip }} extensive"
+          - "show route table bgp.transport.3"
+      loop: "{{ lab06.pe_checks }}"
+      loop_control:
+        label: "{{ item.device_name }}"
+      register: pe_results
+      connection: local
+
+    - name: Run boundary transport detail checks
+      juniper.device.command:
+        host: "{{ item.host }}"
+        port: "{{ item.port }}"
+        user: "{{ junos_user }}"
+        passwd: "{{ DEVICE_PASSWORD }}"
+        commands:
+          - "show route table bgp.transport.3 detail"
+      loop: "{{ lab06.boundary_checks }}"
+      loop_control:
+        label: "{{ item.device_name }}"
+      register: boundary_results
+      connection: local
+
+    - name: Assert CE41 reachability
+      assert:
+        that:
+          - "'0% packet loss' in ce_results.results[0].results[0].stdout"
+        fail_msg: "ASSERT reachability -> FAIL | CE41 cannot reach 172.16.3.32 from 172.16.4.42"
+        success_msg: "ASSERT reachability -> PASS | CE41 reaches 172.16.3.32 from 172.16.4.42"
+      register: assert_reachability
+      ignore_errors: true
+
+    - name: Assert CE41 route color
+      assert:
+        that:
+          - "'color:0:100' in ce_results.results[0].results[1].stdout"
+        fail_msg: "ASSERT route color -> FAIL | CE41 route missing expected color:0:100"
+        success_msg: "ASSERT route color -> PASS | CE41 route contains color:0:100"
+      register: assert_ce_color
+      ignore_errors: true
+
+    - name: Assert PE25 transport class
+      assert:
+        that:
+          - "'Transport class: gold' in pe_results.results[0].results[0].stdout"
+        fail_msg: "ASSERT transport class -> FAIL | PE25 route is not resolving with gold transport"
+        success_msg: "ASSERT transport class -> PASS | PE25 route resolves with gold transport"
+      register: assert_transport
+      ignore_errors: true
+
+    - name: Assert PE25 gold path via ABR23
+      assert:
+        that:
+          - "'toABR23-gold' in pe_results.results[0].results[0].stdout"
+        fail_msg: "ASSERT gold path ABR23 -> FAIL | PE25 missing toABR23-gold"
+        success_msg: "ASSERT gold path ABR23 -> PASS | PE25 includes toABR23-gold"
+      register: assert_path_abr23
+      ignore_errors: true
+
+    - name: Assert PE25 gold path via ABR24
+      assert:
+        that:
+          - "'toABR24-gold' in pe_results.results[0].results[0].stdout"
+        fail_msg: "ASSERT gold path ABR24 -> FAIL | PE25 missing toABR24-gold"
+        success_msg: "ASSERT gold path ABR24 -> PASS | PE25 includes toABR24-gold"
+      register: assert_path_abr24
+      ignore_errors: true
+
+    - name: Assert ABR23 gold transport marker
+      assert:
+        that:
+          - "'transport-target:0:100' in boundary_results.results[0].stdout"
+        fail_msg: "ASSERT gold transport marker -> FAIL | ABR23 missing transport-target:0:100"
+        success_msg: "ASSERT gold transport marker -> PASS | ABR23 includes transport-target:0:100"
+      register: assert_gold_marker
+      ignore_errors: true
+
+    - name: Assert ABR23 bronze transport marker
+      assert:
+        that:
+          - "'transport-target:0:200' in boundary_results.results[0].stdout"
+        fail_msg: "ASSERT bronze transport marker -> FAIL | ABR23 missing transport-target:0:200"
+        success_msg: "ASSERT bronze transport marker -> PASS | ABR23 includes transport-target:0:200"
+      register: assert_bronze_marker
+      ignore_errors: true
+
+    - name: Final assertion summary
+      debug:
+        msg:
+          - "{{ assert_reachability.msg }}"
+          - "{{ assert_ce_color.msg }}"
+          - "{{ assert_transport.msg }}"
+          - "{{ assert_path_abr23.msg }}"
+          - "{{ assert_path_abr24.msg }}"
+          - "{{ assert_gold_marker.msg }}"
+          - "{{ assert_bronze_marker.msg }}"
+
+    - name: Summarize CE results
+      debug:
+        msg:
+          - "=== {{ item.item.device_name }} ==="
+          - "Reachable: {{ 'YES' if '0% packet loss' in item.results[0].stdout else 'NO' }}"
+          - "Color: {{ '0:100 (gold)' if 'color:0:100' in item.results[1].stdout else 'UNKNOWN' }}"
+      loop: "{{ ce_results.results }}"
+
+    - name: Summarize PE results
+      debug:
+        msg:
+          - "=== {{ item.item.device_name }} ==="
+          - "Transport Class: {{ 'GOLD' if 'Transport class: gold' in item.results[0].stdout else 'UNKNOWN' }}"
+          - "Paths:"
+          - "{{ '- toABR23-gold' if 'toABR23-gold' in item.results[0].stdout else '- toABR23-gold: not seen' }}"
+          - "{{ '- toABR24-gold' if 'toABR24-gold' in item.results[0].stdout else '- toABR24-gold: not seen' }}"
+      loop: "{{ pe_results.results }}"
+
+    - name: Summarize boundary results
+      debug:
+        msg:
+          - "=== {{ item.item.device_name }} ==="
+          - "EXPECTED gold marker: transport-target:0:100"
+          - "ACTUAL gold marker: {{ 'PRESENT' if 'transport-target:0:100' in item.stdout else 'MISSING' }}"
+          - "STATUS gold: {{ 'PASS' if 'transport-target:0:100' in item.stdout else 'FAIL' }}"
+          - "EXPECTED bronze marker: transport-target:0:200"
+          - "ACTUAL bronze marker: {{ 'PRESENT' if 'transport-target:0:200' in item.stdout else 'MISSING' }}"
+          - "STATUS bronze: {{ 'PASS' if 'transport-target:0:200' in item.stdout else 'FAIL' }}"
+      loop: "{{ boundary_results.results }}"

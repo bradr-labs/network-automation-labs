@@ -1,0 +1,35 @@
+---
+lab06:
+  name: "Transport-Aware Service Reachability"
+  topology: "Juniper vLabs BGP-CT Inter-Domain"
+
+  service:
+    source_ip: "172.16.4.42"
+    destination_ip: "172.16.3.32"
+    expected_color: "color:0:100"
+    expected_transport_class: "gold"
+
+  transport_expectations:
+    gold_transport_target: "transport-target:0:100"
+    bronze_transport_target: "transport-target:0:200"
+    expected_gold_lsps:
+      - "toABR23-gold"
+      - "toABR24-gold"
+
+  ce_checks:
+    - name: "CE41 service reachability and route view"
+      device_name: "CE41"
+      host: "66.129.235.200"
+      port: 33023
+
+  pe_checks:
+    - name: "PE25 service route resolution"
+      device_name: "PE25"
+      host: "66.129.235.200"
+      port: 33051
+
+  boundary_checks:
+    - name: "ABR23 transport-class visibility"
+      device_name: "ABR23"
+      host: "66.129.235.200"
+      port: 33002

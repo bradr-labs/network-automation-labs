@@ -13,13 +13,13 @@ The lab uses the existing 3-AS Juniper vLabs topology with clearly defined roles
 
 ### Autonomous Systems
 
-- **AS65333**  
+- AS65333 
   Single-router transit AS acting as the central policy control point.
 
-- **AS65222**  
+- AS65222  
   Left-side edge AS with one internal router and multiple border routers.
 
-- **AS65444**  
+- AS65444 
   Right-side edge AS with multiple externally connected routers.
 
 ### Path Characteristics

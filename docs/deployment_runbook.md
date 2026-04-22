@@ -4,7 +4,7 @@
 
 This runbook describes how to safely deploy rendered configurations to the Juniper vLabs environment step by step.
 
-⚠️ IMPORTANT:
+IMPORTANT:
 
 * Never use `load: override` unless you intend to fully replace the device config.
 * The lab base config contains authentication and access settings.
@@ -382,7 +382,7 @@ If only one meaningful commit exists:
 * `rollback 1` may revert too far
 * commit history may not match deployment stages
 
-👉 In this case, DO NOT rely on rollback alone.
+In this case, DO NOT rely on rollback alone.
 
 Use redeploy instead.
 

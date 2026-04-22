@@ -267,10 +267,10 @@ Verification confirms that:
 
 This validates the Lab 05 policy-driven design. The storyline is:
 
-1. **Are prefixes being advertised?**
-2. **Are they received on both paths?**
-3. **Which path wins?**
-4. **Does that match intent?**
+1. Are prefixes being advertised?
+2. Are they received on both paths?
+3. Which path wins?
+4. Does that match intent?
 
 That’s real operator-grade verification.
 

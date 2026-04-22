@@ -33,6 +33,11 @@ Instead, it is:
 2. rendered into device-specific configuration files
 3. deployed in controlled stages
 
+This lab uses the  BGP - Multi-AS topology from Juniper vLabs.
+
+See the topology reference here:
+[Juniper vLabs – IS-IS - Multi-level/area](https://jlabs.juniper.net/vlabs/portal/is-is-multi-level-area/)
+
 ---
 
 ## Key Idea
@@ -481,7 +486,7 @@ If only one meaningful commit exists:
 - `rollback 1` may revert too far
 - commit history may not match deployment stages
 
-👉 In this case, DO NOT rely on rollback alone.
+In this case, DO NOT rely on rollback alone.
 
 Use redeploy instead.
 

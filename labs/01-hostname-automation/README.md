@@ -16,9 +16,10 @@ This is the starting point of the project and introduces:
 
 You can run this lab against any compatible Junos environment.
 
-For this walkthrough, I used Juniper Cloud Labs (JCL), specifically the OSPF Multi-Area topology:
+For this walkthrough, I used Juniper Cloud Labs (JCL), specifically the OSPF Multi-Area topology.
 
-`https://jlabs.juniper.net/vlabs/portal/ospf-multi-area/index.page`
+See the topology reference here:
+[Juniper vLabs – OSPF - Multi-area topology](https://jlabs.juniper.net/vlabs/portal/ospf-multi-area/index.page)
 
 If you already have access to other Junos routers, that is fine too. This lab only needs:
 - reachable devices

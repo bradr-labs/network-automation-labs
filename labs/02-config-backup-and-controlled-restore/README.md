@@ -18,6 +18,9 @@ You can run this lab against any compatible Junos environment.
 
 For this walkthrough, I used Juniper Cloud Labs (JCL). The same JCL IP + port inventory model from Lab 01 is used here.
 
+See the topology reference here:
+[Juniper vLabs – OSPF - Multi-area topology](https://jlabs.juniper.net/vlabs/portal/ospf-multi-area/index.page)
+
 This lab assumes:
 - reachable Junos devices
 - NETCONF enabled
