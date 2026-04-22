@@ -86,6 +86,7 @@ If intent is wrong, traffic still flows — but not as designed.
 
 ##  Lab topology (simplified)
 
+```text
 CE31 (AS64503)
 ↓ (service + color)
 AS64501
@@ -95,6 +96,7 @@ AS64502 (transport domain)
 PE25
 ↓
 CE41 (AS64504)
+```
 
 ---
 
@@ -102,6 +104,7 @@ CE41 (AS64504)
 
 ### Baseline (gold service)
 
+```text
 Service: color:0:100
 ↓
 Resolution scheme
@@ -109,11 +112,13 @@ Resolution scheme
 Gold transport selected
 ↓
 Traffic uses gold LSPs
+```
 
 ---
 
 ### Failure scenario (intent removed)
 
+```text
 Service: no color
 ↓
 No mapping
@@ -121,6 +126,7 @@ No mapping
 No gold transport selection
 ↓
 Traffic still flows (but no SLA guarantee)
+```
 
 ---
 ## How to run the lab
@@ -226,16 +232,19 @@ This Ansible validation playbook checks:
 
 ### Before (expected)
 
+```text
 ASSERT reachability -> PASS
 ASSERT route color -> PASS
 ASSERT transport class -> PASS
 ASSERT gold path ABR23 -> PASS
 ASSERT gold path ABR24 -> PASS
+```
 
 ---
 
 ### After removing intent
 
+```text
 ASSERT reachability -> PASS
 ASSERT route color -> FAIL
 ASSERT transport class -> FAIL
@@ -243,6 +252,7 @@ ASSERT gold path ABR23 -> FAIL
 ASSERT gold path ABR24 -> FAIL
 ASSERT gold transport marker -> PASS
 ASSERT bronze transport marker -> PASS
+```
 
 ---
 

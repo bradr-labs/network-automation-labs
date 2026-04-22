@@ -18,6 +18,9 @@ This lab introduces:
 
 This lab is based on the Juniper Cloud Labs (JCL) OSPF Multi-Area topology.
 
+See the topology reference here:
+[Juniper vLabs – OSPF - Multi-area topology](https://jlabs.juniper.net/vlabs/portal/ospf-multi-area/index.page)
+
 It uses two inventory sources:
 
 - `inventory/ospf_multi_area.yml`

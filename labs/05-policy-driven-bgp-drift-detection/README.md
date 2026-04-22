@@ -2,15 +2,15 @@
 
 ## Overview
 
-This lab builds a **policy-driven eBGP design** on top of the existing 3-AS Juniper vLabs topology.
+This lab builds a policy-driven eBGP design on top of the existing 3-AS Juniper vLabs topology.
 
 Rather than focusing on basic BGP bring-up, this lab introduces:
 
-- **Intent-based policy control**
-- **Model-driven configuration rendering**
-- **Pre-deployment drift detection**
+- Intent-based policy control
+- Model-driven configuration rendering
+- Pre-deployment drift detection
 
-The goal is to move beyond “pushing config” and toward **controlled, validated network changes**.
+The goal is to move beyond “pushing config” and toward controlled, validated network changes.
 
 ---
 
@@ -39,16 +39,16 @@ See the topology reference here:
 
 ### Roles
 
-- **AS65333 — Transit Core**
+- AS65333 — Transit Core
   - Single router
   - Central **policy enforcement point**
   - Multiple inter-AS paths exist; AS65333 acts as a policy-controlled transit option influencing route selection and propagation.
 
-- **Edge AS (Left)**
+- Edge AS (Left)
   - Multi-router domain
   - Originates internal prefixes
 
-- **Edge AS (Right)**
+- Edge AS (Right)
   - Smaller domain
   - Originates local prefixes
 
@@ -58,9 +58,9 @@ All routing between edge domains is controlled by **AS65333**.
 
 This makes the transit router:
 
-- the **policy choke point**
-- the **primary automation target**
-- the **focus of drift detection**
+- the policy choke point
+- the primary automation target
+- the focus of drift detection
 
 ---
 
@@ -69,8 +69,8 @@ This makes the transit router:
 This lab demonstrates:
 
 - Rendering BGP configuration from structured data (no hardcoding)
-- Enforcing **explicit import/export policy**
-- Detecting **configuration drift before deployment**
+- Enforcing explicit import/export policy
+- Detecting configuration drift before deployment
 - Preventing blind config pushes
 - Validating routing behavior after change
 
@@ -85,29 +85,29 @@ render → collect → compare → review → deploy → validate → re-collect
 
 ### Steps
 
-1. **Render**
+1. Render
    - Generate intended BGP and policy config from templates and data
 
-2. **Collect**
+2. Collect
    - Pull current configuration from devices
 
-3. **Compare**
+3. Compare
    - Identify differences between intended and actual state
    - Focus only on managed sections:
      - `protocols bgp`
      - `policy-options`
      - `routing-options`
 
-4. **Review**
+4. Review
    - Evaluate drift before making changes
 
-5. **Deploy**
+5. Deploy
    - Apply candidate configuration
 
-6. **Validate**
+6. Validate
    - Confirm BGP sessions and policy behavior
 
-7. **Re-Collect**
+7. Re-Collect
    - Pull configuration again after deployment
    - Re-run comparison against intended state
    - Confirm convergence:
