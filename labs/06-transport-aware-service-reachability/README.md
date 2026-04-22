@@ -271,7 +271,7 @@ Therefore:
 
 ---
 
-## ⚙️ How I triggered failure
+## How I triggered failure
 
 On the service-originating device (CE31, AS64503 on the far right):
 
