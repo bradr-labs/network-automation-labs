@@ -140,13 +140,16 @@ You will be prompted for the device password used in the vLabs environment.
 
 The playbook performs the following checks:
 
+
 CE41
 - Service reachability (ping)
-Customer-facing route attributes
+- Customer-facing route attributes
+
 PE25
 - Service route resolution
 - Transport class selection
 - Presence of gold transport paths
+
 ABR23
 - Transport-plane visibility
 - Gold and bronze transport class mapping
