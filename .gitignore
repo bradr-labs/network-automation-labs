@@ -14,3 +14,4 @@ staging/
 !playbooks/lab05_*.yml
 !templates/lab05_*.j2
 docs/internal-lab-notes.md
+reports/

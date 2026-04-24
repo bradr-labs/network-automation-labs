@@ -308,3 +308,65 @@ docs/
   lab-06-notes.md
 ```
 
+## Operator Validation Tool
+
+Lab 06 can be executed as a simple validation tool using the wrapper script:
+
+```bash
+./scripts/validate_lab06_service.sh 172.16.3.32
+```
+
+### What it does
+
+The script runs the full validation workflow and provides:
+
+- a clean PASS/FAIL summary on screen
+- full detailed output saved to a timestamped report
+- exit codes suitable for automation or CI pipelines
+
+### Example output (PASS)
+
+```text
+ASSERT reachability -> PASS | CE41 reaches 172.16.3.32 from 172.16.4.42
+ASSERT route color -> PASS | CE41 route contains color:0:100
+ASSERT transport class -> PASS | PE25 route resolves with gold transport
+...
+RESULT: PASS
+```
+
+### Example output (FAIL)
+
+```text
+ASSERT route color -> FAIL | CE41 route missing expected color:0:100
+ASSERT transport class -> FAIL | PE25 route is not resolving with gold transport
+...
+RESULT: FAIL
+```
+
+### Exit codes
+
+```text
+0 → PASS (service matches intended behavior)
+1 → FAIL (validation completed but behavior is incorrect)
+2 → ERROR (execution or connectivity failure)
+```
+
+### Why this matters operationally
+
+This turns validation from a manual CLI exercise into a repeatable check.
+
+Instead of asking:
+
+“Is the route present?”
+
+it answers:
+
+“Is this service being forwarded the way we intended?”
+
+This is especially useful for:
+
+- verifying premium-path (gold) traffic behavior
+- detecting silent policy issues where reachability still works
+- validating changes after deployment
+- embedding service validation into automation workflows
+

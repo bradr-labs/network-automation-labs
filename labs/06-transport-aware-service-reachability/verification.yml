@@ -20,16 +20,16 @@ lab06:
     - name: "CE41 service reachability and route view"
       device_name: "CE41"
       host: "66.129.235.200"
-      port: 33023
+      port: 32023
 
   pe_checks:
     - name: "PE25 service route resolution"
       device_name: "PE25"
       host: "66.129.235.200"
-      port: 33051
+      port: 32051
 
   boundary_checks:
     - name: "ABR23 transport-class visibility"
       device_name: "ABR23"
       host: "66.129.235.200"
-      port: 33002
+      port: 32002
