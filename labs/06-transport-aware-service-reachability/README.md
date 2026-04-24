@@ -12,6 +12,61 @@ Finally, the workflow provides a repeatable way for an operator to validate thes
 
 This lab focuses on understanding forwarding behavior, not just route presence.
 
+## How it works (simplified)
+
+```
+[ CE41 ]
+    |
+    |  (BGP service route: 172.16.3.32 + color:0:100)
+    |
+[ PE25 ]
+    |
+    |  Service resolution → Transport class: GOLD
+    |
+    +--> LSP: toABR23-gold
+    +--> LSP: toABR24-gold
+            |
+        [ Transport Plane ]
+        (gold / bronze paths exist independently)
+            |
+        [ CE31 / Service Endpoint ]
+```
+
+Key idea:
+
+* The CE sees a normal route
+* The PE decides how it is forwarded
+* The transport plane provides multiple possible paths
+* Policy (color) determines which path is used
+
+## Quick demo
+
+Run:
+
+```bash
+./scripts/validate_lab06_service.sh 172.16.3.32
+```
+
+Then:
+
+1. Remove the service color from CE31
+
+```bash
+configure
+delete policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+2. Run the script again
+
+Expected:
+
+* Reachability still PASS
+* Transport validation FAIL
+
+This demonstrates that forwarding behavior changed without breaking the route.
+
+
 ## Background — vLabs BGP-CT inter-domain topology
 
 This lab uses the Juniper vLabs BGP Classful Transport (BGP-CT) inter-domain topology.
@@ -62,6 +117,9 @@ We can prove that:
 - A service marked with a color (intent) is resolved over a specific transport class
 - Removing that intent does NOT break connectivity
 - But it does change how the network forwards traffic
+- A route can be reachable while being forwarded over the wrong transport path
+- Service intent (color/policy) directly influences forwarding behavior
+- Validation must check forwarding, not just reachability
 
 ---
 
