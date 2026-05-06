@@ -17,3 +17,22 @@
 Service classification failure.
 
 The service route is missing the expected color/community, preventing correct transport resolution.
+
+## Scenario 2 – Gold Transport Missing
+
+### Assertion Pattern
+
+- reachability: PASS
+- route color: PASS
+- transport class: FAIL
+- gold paths: FAIL
+- gold transport marker: FAIL
+- bronze transport marker: PASS
+
+---
+
+### Diagnosis
+
+Transport plane degradation.
+
+Gold transport is unavailable, so the service falls back to available transport while remaining reachable.

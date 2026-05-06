@@ -88,3 +88,18 @@ DIAGNOSIS:
 * This lab does not introduce new validation checks
 * It adds interpretation on top of Lab 06 results
 * Focus is on operator-level understanding of failures
+
+## Scenario 2 – Gold Transport Missing
+
+This scenario simulates loss of the intended gold transport class while service classification remains intact.
+
+Expected result:
+
+- service remains reachable (fallback transport used)
+- service route still carries the expected color/community
+- gold transport resolution fails
+- bronze/default transport remains available
+
+Diagnosis:
+
+Transport plane degradation.
