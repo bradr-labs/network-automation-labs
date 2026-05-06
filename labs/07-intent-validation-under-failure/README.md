@@ -49,7 +49,7 @@ commit
 
 ### Diagnosis
 
-```
+```text
 Service classification failure
 Cause: missing service color/community
 Impact: service cannot map to gold transport, fallback likely
@@ -73,7 +73,7 @@ Example:
 
 ## Output Format
 
-```
+```text
 ASSERT ...
 RESULT: PASS/FAIL
 
@@ -103,3 +103,129 @@ Expected result:
 Diagnosis:
 
 Transport plane degradation.
+
+### Sample Output (FAIL)
+
+```text
+ASSERT reachability -> PASS
+ASSERT route color -> PASS
+ASSERT transport class -> PASS
+ASSERT gold path ABR23 -> FAIL
+ASSERT gold path ABR24 -> PASS
+ASSERT gold transport marker -> FAIL
+ASSERT bronze transport marker -> PASS
+
+RESULT: FAIL
+
+DIAGNOSIS:
+
+Partial gold transport path degradation
+Cause: ABR23 gold transport marker/path is missing
+Impact: service still resolves over gold, but transport resiliency is reduced
+```
+
+## Scenario Runbook
+
+### Baseline Validation
+
+Run this before and after each failure scenario.
+
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+Expected result:
+
+RESULT: PASS
+
+### Scenario 1 – Service Classification Missing
+
+Inject Failure
+
+On CE31:
+
+```bash
+configure
+delete policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+Verify
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+Expected diagnosis:
+
+DIAGNOSIS:
+- Service classification failure
+- Cause: service route is missing expected color/community
+- Impact: cannot map to gold transport, fallback likely
+
+Restore
+
+On CE31:
+
+```bash
+configure
+set policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+Confirm Restore
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+Expected result:
+
+RESULT: PASS
+
+### Scenario 2 – Partial Gold Transport Path Degradation
+Inject Failure
+
+On ABR23:
+
+```bash
+configure
+delete protocols mpls label-switched-path toPE25-gold transport-class gold
+delete protocols mpls label-switched-path toASBR22-gold transport-class gold
+commit
+```
+
+Verify
+
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+Expected diagnosis:
+
+```text
+DIAGNOSIS:
+- Partial gold transport path degradation
+- Cause: ABR23 gold transport marker/path is missing
+- Impact: service still resolves over gold, but transport resiliency is reduced
+```
+
+Restore
+
+On ABR23:
+
+```bash
+configure
+set protocols mpls label-switched-path toPE25-gold transport-class gold
+set protocols mpls label-switched-path toASBR22-gold transport-class gold
+commit
+```
+
+Confirm Restore
+
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+Expected result:
+
+RESULT: PASS
+
