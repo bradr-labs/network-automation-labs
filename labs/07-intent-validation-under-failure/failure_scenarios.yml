@@ -1,0 +1,22 @@
+---
+lab: lab07
+title: Intent Validation Under Failure
+
+scenarios:
+  - id: classification_missing
+    name: Service classification missing
+    intent_violation: Service route is no longer mapped to gold transport
+    expected_result: FAIL
+    expected_diagnosis: Service classification failure
+
+  - id: gold_transport_missing
+    name: Gold transport missing
+    intent_violation: Gold transport is unavailable or not advertised
+    expected_result: FAIL
+    expected_diagnosis: Transport plane degradation
+
+  - id: policy_preference_wrong
+    name: Policy preference wrong
+    intent_violation: Service is classified correctly but wrong transport is preferred
+    expected_result: FAIL
+    expected_diagnosis: Policy/path-selection error
