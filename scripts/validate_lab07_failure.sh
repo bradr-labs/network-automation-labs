@@ -54,13 +54,14 @@ if grep -q "ASSERT .* -> FAIL" "$REPORT_FILE"; then
   fi
 
   if grep -q "ASSERT route color -> PASS" "$REPORT_FILE" && \
-     grep -q "ASSERT transport class -> FAIL" "$REPORT_FILE" && \
-     grep -q "ASSERT gold transport marker -> FAIL" "$REPORT_FILE" && \
-     grep -q "ASSERT bronze transport marker -> PASS" "$REPORT_FILE"; then
+     grep -q "ASSERT transport class -> PASS" "$REPORT_FILE" && \
+     grep -q "ASSERT gold path ABR23 -> FAIL" "$REPORT_FILE" && \
+     grep -q "ASSERT gold path ABR24 -> PASS" "$REPORT_FILE" && \
+     grep -q "ASSERT gold transport marker -> FAIL" "$REPORT_FILE"; then
 
-    echo "- Transport plane degradation"
-    echo "- Cause: gold transport marker is missing or unavailable"
-    echo "- Impact: service remains classified, but cannot resolve over gold transport"
+    echo "- Partial gold transport path degradation"
+    echo "- Cause: ABR23 gold transport marker/path is missing"
+    echo "- Impact: service still resolves over gold, but transport resiliency is reduced"
     DIAGNOSIS_FOUND=1
   fi
 
