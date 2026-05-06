@@ -39,8 +39,9 @@ fi
 if grep -q "ASSERT .* -> FAIL" "$REPORT_FILE"; then
   echo
   echo "RESULT: FAIL"
-    echo
+  echo
   echo "DIAGNOSIS:"
+  DIAGNOSIS_FOUND=0
 
   if grep -q "ASSERT route color -> FAIL" "$REPORT_FILE" && \
      grep -q "ASSERT transport class -> FAIL" "$REPORT_FILE" && \
@@ -49,6 +50,7 @@ if grep -q "ASSERT .* -> FAIL" "$REPORT_FILE"; then
     echo "- Service classification failure"
     echo "- Cause: service route is missing expected color/community"
     echo "- Impact: cannot map to gold transport, fallback likely"
+    DIAGNOSIS_FOUND=1
   fi
 
   if grep -q "ASSERT route color -> PASS" "$REPORT_FILE" && \
@@ -59,6 +61,13 @@ if grep -q "ASSERT .* -> FAIL" "$REPORT_FILE"; then
     echo "- Transport plane degradation"
     echo "- Cause: gold transport marker is missing or unavailable"
     echo "- Impact: service remains classified, but cannot resolve over gold transport"
+    DIAGNOSIS_FOUND=1
+  fi
+
+  if [ "$DIAGNOSIS_FOUND" -eq 0 ]; then
+    echo "- Multiple or unknown intent failure"
+    echo "- Cause: assertion pattern does not match a single known scenario"
+    echo "- Impact: review failed assertions above and full report for details"
   fi
   echo "Full output saved to: $REPORT_FILE"
   exit 1
