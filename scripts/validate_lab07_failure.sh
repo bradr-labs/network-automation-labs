@@ -50,6 +50,16 @@ if grep -q "ASSERT .* -> FAIL" "$REPORT_FILE"; then
     echo "- Cause: service route is missing expected color/community"
     echo "- Impact: cannot map to gold transport, fallback likely"
   fi
+
+  if grep -q "ASSERT route color -> PASS" "$REPORT_FILE" && \
+     grep -q "ASSERT transport class -> FAIL" "$REPORT_FILE" && \
+     grep -q "ASSERT gold transport marker -> FAIL" "$REPORT_FILE" && \
+     grep -q "ASSERT bronze transport marker -> PASS" "$REPORT_FILE"; then
+
+    echo "- Transport plane degradation"
+    echo "- Cause: gold transport marker is missing or unavailable"
+    echo "- Impact: service remains classified, but cannot resolve over gold transport"
+  fi
   echo "Full output saved to: $REPORT_FILE"
   exit 1
 fi
