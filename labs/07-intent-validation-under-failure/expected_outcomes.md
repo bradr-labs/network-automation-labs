@@ -1,14 +1,19 @@
-# Lab 07 Expected Outcomes
+# Expected Outcomes – Lab 07
 
-## Scenario 1 — Service Classification Missing
+## Scenario 1 – Service Classification Missing
 
-Expected assertion pattern:
+### Assertion Pattern
 
-- reachability: PASS or FAIL depending on fallback
-- route color: FAIL
-- transport class: FAIL
+* reachability: PASS
+* route color: FAIL
+* transport class: FAIL
+* gold paths: FAIL
+* transport markers: PASS
 
-Expected diagnosis:
+---
+
+### Diagnosis
 
 Service classification failure.
-The service route is not carrying the expected color/community, so it cannot reliably resolve over gold transport.
+
+The service route is missing the expected color/community, preventing correct transport resolution.
