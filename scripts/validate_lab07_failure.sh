@@ -8,7 +8,7 @@ if [ -z "$SERVICE_IP" ]; then
   exit 2
 fi
 
-REPORT_DIR="reports/lab06"
+REPORT_DIR="reports/lab07"
 mkdir -p "$REPORT_DIR"
 
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
