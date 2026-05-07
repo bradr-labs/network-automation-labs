@@ -16,45 +16,6 @@ Instead of only detecting mismatches (PASS/FAIL), this lab classifies and explai
 
 ---
 
-## Scenario 1 – Service Classification Missing
-
-### Description
-
-The service route is no longer tagged with the expected color/community (`map2gold`).
-
-This simulates loss of service classification at ingress.
-
----
-
-### Failure Injection
-
-On CE31:
-
-```bash
-delete policy-options policy-statement vpn term 1 then community add map2gold
-commit
-```
-
----
-
-### Expected Behavior
-
-* Service remains reachable
-* Route color assertion fails
-* Transport class assertion fails
-* Gold path assertions fail
-* Transport markers remain present
-
----
-
-### Diagnosis
-
-Service classification failure
-Cause: missing service color/community
-Impact: service cannot map to gold transport, fallback likely
-
----
-
 ## JCL Runtime Access
 
 This lab uses Juniper vLabs BGP-CT Inter-Domain topology.
@@ -103,11 +64,51 @@ DIAGNOSIS:
 * It adds interpretation on top of Lab 06 results
 * Focus is on operator-level understanding of failures
 
-## Scenario 2 – Gold Transport Missing
+## Scenario 1 – Service Classification Missing
+
+### Description
+
+The service route is no longer tagged with the expected color/community (`map2gold`).
+
+This simulates loss of service classification at ingress.
+
+---
+
+### Failure Injection
+
+On CE31:
+
+```bash
+delete policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+---
+
+### Expected Behavior
+
+* Service remains reachable
+* Route color assertion fails
+* Transport class assertion fails
+* Gold path assertions fail
+* Transport markers remain present
+
+---
+
+### Diagnosis
+
+```text
+Service classification failure
+Cause: missing service color/community
+Impact: service cannot map to gold transport, fallback likely
+```
+---
+
+## Scenario 2 – Partial Gold Transport Path Degradation
 
 This scenario simulates loss of the intended gold transport class while service classification remains intact.
 
-Expected result:
+### Expected result:
 
 - service remains reachable (fallback transport used)
 - service route still carries the expected color/community
@@ -130,13 +131,36 @@ ASSERT gold transport marker -> FAIL
 ASSERT bronze transport marker -> PASS
 
 RESULT: FAIL
+```
 
-DIAGNOSIS:
+### Diagnosis
 
+```text
 Partial gold transport path degradation
 Cause: ABR23 gold transport marker/path is missing
 Impact: service still resolves over gold, but transport resiliency is reduced
 ```
+
+## Scenario 3 – Mixed / Multiple Intent Failure
+
+This scenario combines multiple failures simultaneously to validate fallback diagnosis behavior.
+
+### Assertion Pattern
+
+- reachability: PASS
+- route color: FAIL
+- transport class: FAIL
+- gold path ABR23: FAIL
+- gold path ABR24: FAIL
+- gold transport marker: FAIL
+- bronze transport marker: PASS
+
+### Diagnosis
+
+Multiple or unknown intent failure.
+
+The assertion pattern does not match a single known scenario, so the validator avoids overconfident diagnosis and directs the operator to review the failed assertions and full report.
+
 
 ## Scenario Runbook
 
@@ -150,11 +174,13 @@ Run this before and after each failure scenario.
 
 Expected result:
 
+```text
 RESULT: PASS
+```
 
-### Scenario 1 – Service Classification Missing
+## Scenario 1 – Service Classification Missing
 
-Inject Failure
+### Inject Failure
 
 On CE31:
 
@@ -164,21 +190,20 @@ delete policy-options policy-statement vpn term 1 then community add map2gold
 commit
 ```
 
-Verify
+### Verify
 ```bash
 ./scripts/validate_lab07_failure.sh 172.16.3.32
 ```
 
-Expected diagnosis:
+### Expected diagnosis:
 
 ```text
-DIAGNOSIS:
-- Service classification failure
-- Cause: service route is missing expected color/community
-- Impact: cannot map to gold transport, fallback likely
+Service classification failure
+Cause: service route is missing expected color/community
+Impact: cannot map to gold transport, fallback likely
 ```
 
-Restore
+### Restore
 
 On CE31:
 
@@ -188,17 +213,21 @@ set policy-options policy-statement vpn term 1 then community add map2gold
 commit
 ```
 
-Confirm Restore
+### Confirm Restore
+
 ```bash
 ./scripts/validate_lab07_failure.sh 172.16.3.32
 ```
 
-Expected result:
+### Expected result:
 
+```text
 RESULT: PASS
+```
 
-### Scenario 2 – Partial Gold Transport Path Degradation
-Inject Failure
+## Scenario 2 – Partial Gold Transport Path Degradation
+
+### Inject Failure
 
 On ABR23:
 
@@ -209,13 +238,13 @@ delete protocols mpls label-switched-path toASBR22-gold transport-class gold
 commit
 ```
 
-Verify
+### Verify
 
 ```bash
 ./scripts/validate_lab07_failure.sh 172.16.3.32
 ```
 
-Expected diagnosis:
+### Expected diagnosis:
 
 ```text
 DIAGNOSIS:
@@ -224,7 +253,7 @@ DIAGNOSIS:
 - Impact: service still resolves over gold, but transport resiliency is reduced
 ```
 
-Restore
+### Restore
 
 On ABR23:
 
@@ -235,13 +264,83 @@ set protocols mpls label-switched-path toASBR22-gold transport-class gold
 commit
 ```
 
-Confirm Restore
+### Confirm Restore
 
 ```bash
 ./scripts/validate_lab07_failure.sh 172.16.3.32
 ```
 
-Expected result:
+### Expected result:
 
+```text
 RESULT: PASS
+```
+
+## Scenario 3 – Mixed / Multiple Intent Failure
+
+### Inject Failure
+
+On CE31:
+
+```bash
+configure
+delete policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+On ABR23:
+
+```bash
+configure
+delete protocols mpls label-switched-path toPE25-gold transport-class gold
+delete protocols mpls label-switched-path toASBR22-gold transport-class gold
+commit
+```
+
+### Verify
+
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+### Expected diagnosis:
+
+```text
+DIAGNOSIS:
+- Multiple or unknown intent failure
+- Cause: assertion pattern does not match a single known scenario
+- Impact: review failed assertions above and full report for details
+```
+
+### Restore
+
+On CE31:
+
+```bash
+configure
+set policy-options policy-statement vpn term 1 then community add map2gold
+commit
+```
+
+On ABR23:
+
+```bash
+configure
+set protocols mpls label-switched-path toPE25-gold transport-class gold
+set protocols mpls label-switched-path toASBR22-gold transport-class gold
+commit
+```
+
+### Confirm Restore
+
+```bash
+./scripts/validate_lab07_failure.sh 172.16.3.32
+```
+
+### Expected result:
+
+```text
+RESULT: PASS
+```
+
 

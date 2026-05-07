@@ -38,3 +38,23 @@ The service route is missing the expected color/community, preventing correct tr
 Partial gold transport path degradation.
 
 The service remains correctly classified and still resolves over gold transport, but one gold path/marker is missing, reducing transport resiliency.
+
+## Scenario 3 – Mixed / Multiple Intent Failure
+
+### Assertion Pattern
+
+- reachability: PASS
+- route color: FAIL
+- transport class: FAIL
+- gold path ABR23: FAIL
+- gold path ABR24: FAIL
+- gold transport marker: FAIL
+- bronze transport marker: PASS
+
+---
+
+### Diagnosis
+
+Multiple or unknown intent failure.
+
+The assertion pattern does not match a single known scenario, so the validator avoids overconfident diagnosis and directs the operator to review the failed assertions and full report.

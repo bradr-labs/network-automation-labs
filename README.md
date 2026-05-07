@@ -73,7 +73,8 @@ Each lab builds on the previous one and introduces a new layer of operational th
 | 03  | Controlled OSPF to ISIS migration      | Staged rendering, explicit protocol removal, and idempotent migration         |
 | 04  | Full SP L3VPN deployment               | Full underlay + overlay + service automation                                  |
 | 05  | Policy-driven BGP with drift detection | Intent-based policy control, pre-deployment diffing, and safe deployment      |
-| 06  | Transport-aware service validation     | Service → transport mapping and forwarding validation under change            |
+| 06  | Transport-aware service validation     | Service → transport dependency validation and forwarding-path observability   |
+| 07  | Intent validation under failure        | Failure classification, multi-plane fault isolation, and diagnostic workflows |
 
 Start at Lab 01 if you are new to this.  
 Jump to Lab 04 if you want the full service deployment.  
@@ -213,7 +214,6 @@ You can spin up a topology, get device IP/port access, and run this lab exactly 
 3. Launch a lab (for example: `vMX` or `isis_multi_area`)  
 4. Use the provided IP/port details in your Ansible inventory  
 
-## Recent Lab
 
 ### Lab 05 – Policy-Driven BGP with Drift Detection
 
@@ -229,13 +229,13 @@ It demonstrates:
 
 This is the first lab in the series focused not just on generating configuration, but on **controlling and verifying routing behavior safely**.
 
-## Latest Lab
+## Current Focus Labs
 
 ### Lab 06 – Transport-Aware Service Reachability
 
 Lab 06 extends the series from policy control into **transport-aware service validation**.
 
-It demonstrates:
+This labs demonstrates:
 
 - how customer-facing services are resolved over specific transport classes (gold / bronze)
 - how service intent (color) drives transport selection at the PE
@@ -243,7 +243,7 @@ It demonstrates:
 - end-to-end validation of service → transport dependency (CE → PE → boundary)
 - controlled failure testing by removing service classification at the source
 
-The lab introduces a validation workflow that proves not only that a service is reachable, but **how it is forwarded and why**.
+Lab 06 introduces a validation workflow that proves not only that a service is reachable, but **how it is forwarded and why**.
 
 It also shows how operators can verify these behaviors across different states (for example, with and without service classification), rather than relying on static control-plane inspection.
 
@@ -255,20 +255,35 @@ This marks the transition from:
 into:
 
 - **intent-driven forwarding validation and multi-plane observability (Lab 06)**
+- **failure classification and operator-focused diagnosis workflows (Lab 07)**
 
 ---
 
-## Future Labs
+## Latest Lab
 
-This repository is designed as an evolving series.
+### Lab 07 – Intent Validation Under Failure
 
-Planned extensions include:
+Lab 07 extends the series from transport-aware validation into operator-focused failure diagnosis.
 
-### Lab 07 – Intent Validation & Failure Scenarios
-- systematic failure injection (policy, transport, classification)
-- full PASS/FAIL validation workflows
-- service vs transport fault isolation
-- validation patterns reusable in production networks
+It demonstrates:
+
+- controlled failure injection across service and transport layers
+- classification of assertion failures into operational diagnoses
+- distinction between service-plane and transport-plane faults
+- handling of mixed or ambiguous failure conditions
+- reusable PASS/FAIL validation workflows for operational testing
+
+The lab focuses on explaining *why* forwarding intent is violated, not simply detecting that a mismatch exists.
+
+This marks the transition from:
+
+- service-aware forwarding validation (Lab 06)
+
+into:
+
+- **intent classification, fault isolation, and operational diagnosis workflows (Lab 07)**
+
+## Future Planned Lab
 
 ### Lab 08 – Multi-Service / Multi-Class Validation
 - validating multiple services across different transport classes
