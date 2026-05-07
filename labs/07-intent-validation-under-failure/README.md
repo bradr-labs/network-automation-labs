@@ -49,13 +49,27 @@ commit
 
 ### Diagnosis
 
-```text
 Service classification failure
 Cause: missing service color/community
 Impact: service cannot map to gold transport, fallback likely
-```
 
 ---
+
+## JCL Runtime Access
+
+This lab uses Juniper vLabs BGP-CT Inter-Domain topology.
+
+After each JCL respin, update the host and port values in:
+
+`labs/06-transport-aware-service-reachability/verification.yml`
+
+Required devices:
+
+- CE41
+- PE25
+- ABR23
+
+These values are session-specific and should match the current JCL portal access details.
 
 ## How to Run
 
@@ -157,10 +171,12 @@ Verify
 
 Expected diagnosis:
 
+```text
 DIAGNOSIS:
 - Service classification failure
 - Cause: service route is missing expected color/community
 - Impact: cannot map to gold transport, fallback likely
+```
 
 Restore
 
