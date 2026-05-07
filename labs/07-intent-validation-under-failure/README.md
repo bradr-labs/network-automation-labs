@@ -157,10 +157,11 @@ This scenario combines multiple failures simultaneously to validate fallback dia
 
 ### Diagnosis
 
+```text
 Multiple or unknown intent failure.
 
 The assertion pattern does not match a single known scenario, so the validator avoids overconfident diagnosis and directs the operator to review the failed assertions and full report.
-
+```
 
 ## Scenario Runbook
 
